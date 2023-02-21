@@ -30,6 +30,69 @@ const createInitialSection = () => {
     return section.map((row, rowIdx) => row.map((col, colIdx) => ({...section[rowIdx][colIdx], row: rowIdx, column: colIdx})))
 }
 
+const doWeHaveAWinner = (moves, player, board) => {
+    const startState = moves.slice()
+    const frontier = [startState]
+    const processed = Array(board.length).fill(Array(board[0].length).fill(false))
+
+    const goalTest = (state) => {
+        const diagonalCheck = (curCell, nextCell) => {
+             (Math.abs(curCell[0] - nextCell[0]) < 1 && Math.abs(curCell[1] - nextCell[1] < 1))
+
+            for (let i = -1; i <= 1; i++) {
+                if (i === 0)
+                    continue
+                if (curCell[0] - nextCell[0] === i && curCell[1] - nextCell[1] === -i)
+                    return true
+            }
+            return false
+
+
+        }
+
+        if (state.every((cell, idx) => cell[0] === state[0][0]))
+            return true
+        
+        if (state.every((cell, idx) => cell[1] === state[0][1]))
+            return true
+
+        const curIdx = 0
+        const nextIdx = 1
+        const count = 0
+        while (nextIdx < state.length && !processed[state[curIdx][0]][state[curIdx][1]] && diagonalCheck(state[curIdx], state[nextIdx])) {
+            curIdx = nextIdx
+            nextIdx++
+            count++
+        }
+
+        return count === 5
+    }
+
+    const getSuccessors = (state) => {
+        const successors = []
+        for (let cell of state) {
+            for (let i = -1; i <= 1; i++) {
+                if (i === 0) continue;
+                const newRow = cell[0] + i
+                const newCol = cell[1] + i
+                if (!processed[newRow][newCol])
+                    successors.push([newRow, newCol])
+            }
+        }
+        return successors
+    }
+
+    while (frontier.length > 0) {
+        const state = frontier.shift()
+        if (goalTest(state)) return true
+        const successors = getSuccessors(state)
+        for (let i in successors) 
+            frontier.push(successors[i])
+    }
+
+    return false
+}
+
 const mapSectionCellToBoardCell = (colIdx, rowIdx, sectionIdx) => {
     if (sectionIdx === 0) {
         return [rowIdx, colIdx]
@@ -49,14 +112,13 @@ const mapSectionCellToBoardCell = (colIdx, rowIdx, sectionIdx) => {
     }
 }
 
-
 export default function Board(props) {
     const [board, setBoard] = useState(createInitialBoard2);
     const [haveAWinner, setHaveAWinner] = useState(false);
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
     
-    const [moves, setMoves] = useState(Array(2).fill(Array(5).fill([])))
+    const [moves, setMoves] = useState(Array(2).fill([]))
 
     const [firstAvailableIndex, setFirstAvailableIndex] =
         useState(() => Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
@@ -69,8 +131,9 @@ export default function Board(props) {
     };
 
     function onClickCallback(colIdx, rowIdx, sectionIdx) {
-        if( haveAWinner )
+        if( haveAWinner ) {
             return;
+        }
         
         const [row, col] = mapSectionCellToBoardCell(colIdx, rowIdx, sectionIdx)
         const newBoard = board.slice()
@@ -78,42 +141,17 @@ export default function Board(props) {
 
         newBoard[row][col] = nextColor
 
-        
-        const nextColorIdx = nextColor === "blue" ? 0 : 1
+        const currentPlayer = nextColor === 'blue' ? 0 : 1
         const newMoves = moves.slice()
-        newMoves[nextColorIdx].push([row, col])
+        newMoves[currentPlayer].push([row, col])
+        if (newMoves.length === 5 && doWeHaveAWinner(newMoves[currentPlayer])) {
+            setHaveAWinner(true)
+            setWinnerColor(nextColor);
+        }
         
         setBoard(newBoard)
         setNextColor(newColor)
         setMoves(newMoves)
-
-
-        // let rowIdx = firstAvailableIndex[colIdx];
-        // console.log(`rowIdx = ${rowIdx}, colIdx = ${colIdx}`);
-        // if( rowIdx <  0)
-        //     return;
-
-        // const availableIndex = firstAvailableIndex.slice();
-        // availableIndex[colIdx] -= 1;
-        // setFirstAvailableIndex(availableIndex);
-
-        // let affectedRow = board[rowIdx].slice();
-        // affectedRow[colIdx] = {
-        //     ...affectedRow[colIdx],
-        //     color: nextColor,
-        //     isOccupied: true
-        // };
-
-        // let newBoard = board.slice();
-        // newBoard[rowIdx] = affectedRow;
-
-        // setBoard(newBoard);
-        // setNextColor(advanceColor(nextColor));
-
-        // if( doWeHaveAWinner(rowIdx, colIdx, nextColor, newBoard) ) {
-        //     setHaveAWinner(true);
-        //     setWinnerColor(nextColor);
-        // }
     }
 
     const calcWidth = () => { 
