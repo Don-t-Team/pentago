@@ -4,19 +4,30 @@ import Row from "./Row";
 import configAttributes from "../config/attributes";
 
 const Section = props => {
-    const {onClickCallback, section, width} = props;
+    const {onClickCallback, index, section, width} = props;
 
-    console.log("section", section)
+    // const marginBottom = index <= configAttributes.num_rows / 2
+    //     ? configAttributes.s_gap
+    //     : 0
+    
+    // const marginRight = index % 2 === 0 
+    //     ? configAttributes.s_gap
+    //     : 0
+
+    // const rowWidth = width + marginRight
+
+    console.log("section width", width)
 
     return (
         <Grid 
             data_class={"section"}
             container
-             
             sx={{
                 display: 'flex',
                 flexDirection: 'row',
-                mb: 0.5, 
+                // mb: marginBottom,
+                // mr: marginRight 
+                width: width  
             }}
             xs={6}
         >

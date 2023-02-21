@@ -87,14 +87,33 @@ export default function Board(props) {
 
     const calcWidth = () => { 
         return configAttributes.num_columns * configAttributes.cell_width +
-        (configAttributes.num_columns - 1) * configAttributes.h_gap
+        (configAttributes.num_columns - 1) * configAttributes.h_gap + configAttributes.s_gap
     }
 
     const width = calcWidth()
 
+    console.log("board width", width)
+
+
+    // const marginBottom = index <= configAttributes.num_rows / 2
+    // ? configAttributes.s_gap
+    // : 0
+
+    // const sectionWidth = index % 2 === 0 
+    // ? configAttributes.s_gap
+    // : 0
+
+    const calcSectionWidth = (sectionIdx) => {
+        return sectionIdx % 2 === 0
+            ?   configAttributes.s_gap + width / 2
+            :   width / 2
+    }
+
     return (
         <Fragment>
-            <Stack sx={{ width: width, m: 'auto', mt: 15 }}>
+            <Stack
+                data_class="stack" 
+                sx={{ width: width, m: 'auto', mt: 15 }}>
                 <TopMessage nextColor={nextColor}
                             winnerColor={winnerColor}
                             haveAWinner={haveAWinner}
@@ -107,19 +126,24 @@ export default function Board(props) {
                     //          onClickCallback={(colIdx) => onClickCallback(colIdx)}
                     //     />
                     // )
-                    <Grid container columns={configAttributes.num_columns}               
+                    <Grid 
+                        data_class={"board"}
+                        container 
+                        columns={configAttributes.num_columns}                
                         sx={{
                             display: 'flex',
                             flexDirection: 'row',
                             mb: 0.5,
+                            width: width
                         }}
                     >
                         {
                             board.map((section, sectionIdx) => 
                                 <Section 
                                     data_class="section"
-                                    width={width / 2}
+                                    width={calcSectionWidth(sectionIdx)}
                                     key={sectionIdx}
+                                    index={sectionIdx}
                                     section={section}
                                     sectionIdx={sectionIdx}
                                     onClickCallback={(colIdx) => onClickCallback(colIdx)}

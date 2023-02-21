@@ -7,6 +7,7 @@ const Row = props => {
     const {onClickCallback, row, width} = props;
 
     console.log("row", row)
+    console.log("rowWidth", width)
 
     return (
         <Grid 
@@ -15,7 +16,7 @@ const Row = props => {
               container 
               columns={configAttributes.num_columns / 2}
               sx={{
-                  width: width,
+                  width: "100%",
                   display: 'flex',
                   flexDirection: 'row',
                   mb: 0.5,

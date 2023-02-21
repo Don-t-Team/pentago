@@ -4,7 +4,7 @@ const configAttributes = {
     h_gap:7,
     cell_width: 50,
     cell_height: 50,
-    s_gap:15
+    s_gap: 50
 }
 
 export default configAttributes
