@@ -4,14 +4,14 @@ import Cell from "./Cell"
 import configAttributes from "../config/attributes"
 
 const Row = props => {
-    const {onClickCallback, row} = props;
+    const {onClickCallback, row, rowIdx, sectionIdx} = props;
 
-    console.log("row", row)
+    // console.log("row", row)
 
     return (
         <Grid 
               data_class={"row"}
-              row
+              row="true"
               container 
               width={"100%"}
               columns={configAttributes.num_columns / 2}
@@ -27,10 +27,9 @@ const Row = props => {
                 row.map((cell, idx) =>
                     <Grid 
                         data_class={"cell"}
-                        item 
-                        // xs={1} 
+                        item  
                         key={idx} 
-                        onClick={() => onClickCallback(idx)}
+                        onClick={() => onClickCallback(idx, rowIdx, sectionIdx)}
                         sx={{
                             display: 'flex',
                             flexDirection: 'row',
