@@ -12,7 +12,11 @@ const Cell = (props) => {
             backgroundColor: cell['color'],
             border: 1,
             borderColor: 'black',
-            borderRadius: '50%'}}
+            borderRadius: '50%',
+            display: 'flex',
+            flexDirection: 'row',
+            mb: 0.5,
+            }}
         />
     );
 }

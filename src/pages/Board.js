@@ -1,8 +1,9 @@
 import {Fragment, useState} from 'react';
 import Stack from "@mui/material/Stack";
+import Grid from "@mui/material/Grid"
 
 import TopMessage from './TopMessage'
-import Row from './Row'
+import Section from "./Section"
 
 import doWeHaveAWinner from "./doWeHaveAWinner"
 import configAttributes from "../config/attributes"
@@ -11,18 +12,32 @@ const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
 
 const createInitialBoard = () => {
     let board = Array(configAttributes.num_rows).fill(Array(configAttributes.num_columns).fill({color: "white", isOccupied: false}));
+
+    // let board2 = createInitialBoard2()
+    // console.log("board2", board2)
     return board.map((row, rowIdx) => row.map( (col, colIdx) => {
         return {...board[rowIdx][colIdx], row: rowIdx, column: colIdx }
     }));
 }
 
-const createSection = () => {
+const createInitialBoard2 = () => {
+    let board = new Array(4).fill(createInitialSection())
+    return board.map((section, sectionIdx) => section.map((row, rowIdx) => row.map((col, colIdx) => {
+        return {...section[rowIdx][colIdx], section: sectionIdx, row: rowIdx, col: colIdx}
+    })))
+}
+
+const createInitialSection = () => {
     let section = Array(configAttributes.num_rows / 2).fill(Array(configAttributes.num_columns / 2).fill({ color: 'white', isOccupied: false }))
     return section.map((row, rowIdx) => row.map((col, colIdx) => ({...section[rowIdx][colIdx], row: rowIdx, column: colIdx})))
 }
 
+const mapSectionCellToBoardCell = () => {
+
+}
+
 export default function Board(props) {
-    const [board, setBoard] = useState(createInitialBoard);
+    const [board, setBoard] = useState(createInitialBoard2);
     
     const [haveAWinner, setHaveAWinner] = useState(false);
     const [nextColor, setNextColor] = useState('blue');
@@ -70,30 +85,50 @@ export default function Board(props) {
         }
     }
 
-    const calcWidth = () => configAttributes.num_columns * configAttributes.cell_width +
+    const calcWidth = () => { 
+        return configAttributes.num_columns * configAttributes.cell_width +
         (configAttributes.num_columns - 1) * configAttributes.h_gap
+    }
 
+    const width = calcWidth()
 
     return (
         <Fragment>
-
-            <Stack sx={{width: calcWidth(), m: 'auto', mt: 15 }}
-            >
+            <Stack sx={{ width: width, m: 'auto', mt: 15 }}>
                 <TopMessage nextColor={nextColor}
                             winnerColor={winnerColor}
                             haveAWinner={haveAWinner}
                             reset={reset} />
                 {
-                    board.map((row, rowIdx) =>
-                        <Row key={rowIdx}
-                             row={row}
-                             rowIdx={rowIdx}
-                             onClickCallback={(colIdx) => onClickCallback(colIdx)}
-                        />
-                    )
+                    // board.map((row, rowIdx) =>
+                    //     <Row key={rowIdx}
+                    //          row={row}
+                    //          rowIdx={rowIdx}
+                    //          onClickCallback={(colIdx) => onClickCallback(colIdx)}
+                    //     />
+                    // )
+                    <Grid container columns={configAttributes.num_columns}               
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            mb: 0.5,
+                        }}
+                    >
+                        {
+                            board.map((section, sectionIdx) => 
+                                <Section 
+                                    data_class="section"
+                                    width={width / 2}
+                                    key={sectionIdx}
+                                    section={section}
+                                    sectionIdx={sectionIdx}
+                                    onClickCallback={(colIdx) => onClickCallback(colIdx)}
+                                />
+                            )
+                        }
+                    </Grid>
                 }
             </Stack>
-
         </Fragment>
     );
 }
