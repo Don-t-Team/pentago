@@ -2,21 +2,23 @@ import Grid from "@mui/material/Grid";
 import Row from "./Row";
 
 import configAttributes from "../config/attributes";
+import { margin } from "@mui/system";
 
 const Section = props => {
-    const {onClickCallback, index, section, width} = props;
+    const {onClickCallback, index, section, width, height} = props;
 
-    // const marginBottom = index <= configAttributes.num_rows / 2
-    //     ? configAttributes.s_gap
-    //     : 0
+    console.log("section index", index, "section width", width, "section height", height)
+
+    let marginBottom = index <= configAttributes.num_sections / 2
+        ? configAttributes.s_gap
+        : 0
+        
+    const sectionHeight = height - marginBottom
+    marginBottom += 'px'
     
-    // const marginRight = index % 2 === 0 
-    //     ? configAttributes.s_gap
-    //     : 0
+    console.log("section height", sectionHeight)
+    console.log("margin bottom", marginBottom)
 
-    // const rowWidth = width + marginRight
-
-    console.log("section width", width)
 
     return (
         <Grid 
@@ -25,9 +27,9 @@ const Section = props => {
             sx={{
                 display: 'flex',
                 flexDirection: 'row',
-                // mb: marginBottom,
-                // mr: marginRight 
-                width: width  
+                width: width,
+                height: sectionHeight,
+                marginBottom: marginBottom
             }}
             xs={6}
         >
@@ -35,6 +37,7 @@ const Section = props => {
                 section.map((row, idx) => (
                     <Row 
                         width={width}
+                        height={height}
                         key={idx}
                         row={row}
                         rowIdx={idx}

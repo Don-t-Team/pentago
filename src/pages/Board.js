@@ -87,26 +87,26 @@ export default function Board(props) {
 
     const calcWidth = () => { 
         return configAttributes.num_columns * configAttributes.cell_width +
-        (configAttributes.num_columns - 1) * configAttributes.h_gap + configAttributes.s_gap
+        (configAttributes.num_columns - 1) * configAttributes.h_gap + 
+        configAttributes.s_gap
     }
 
     const width = calcWidth()
 
     console.log("board width", width)
 
-
-    // const marginBottom = index <= configAttributes.num_rows / 2
-    // ? configAttributes.s_gap
-    // : 0
-
-    // const sectionWidth = index % 2 === 0 
-    // ? configAttributes.s_gap
-    // : 0
-
     const calcSectionWidth = (sectionIdx) => {
-        return sectionIdx % 2 === 0
-            ?   configAttributes.s_gap + width / 2
-            :   width / 2
+        const num_cols = configAttributes.num_columns / 2
+        const marginRight = sectionIdx % 2 === 0 ? configAttributes.s_gap : 0
+        return num_cols * configAttributes.cell_width +
+        (num_cols - 1) * configAttributes.h_gap + marginRight
+    }
+
+    const calcSectionHeight = (sectionIdx) => {
+        const num_rows = configAttributes.num_rows / 2
+        const marginBottom = sectionIdx < configAttributes.num_sections / 2 ? configAttributes.s_gap : 0
+        return num_rows * configAttributes.cell_height +
+        (num_rows - 1) * configAttributes.h_gap + marginBottom
     }
 
     return (
@@ -119,13 +119,6 @@ export default function Board(props) {
                             haveAWinner={haveAWinner}
                             reset={reset} />
                 {
-                    // board.map((row, rowIdx) =>
-                    //     <Row key={rowIdx}
-                    //          row={row}
-                    //          rowIdx={rowIdx}
-                    //          onClickCallback={(colIdx) => onClickCallback(colIdx)}
-                    //     />
-                    // )
                     <Grid 
                         data_class={"board"}
                         container 
@@ -134,7 +127,6 @@ export default function Board(props) {
                             display: 'flex',
                             flexDirection: 'row',
                             mb: 0.5,
-                            width: width
                         }}
                     >
                         {
@@ -142,6 +134,7 @@ export default function Board(props) {
                                 <Section 
                                     data_class="section"
                                     width={calcSectionWidth(sectionIdx)}
+                                    height={calcSectionHeight(sectionIdx)}
                                     key={sectionIdx}
                                     index={sectionIdx}
                                     section={section}

@@ -7,15 +7,15 @@ const Cell = (props) => {
 
     return (
         <Box sx={{
-            width: configAttributes.cell_width,
-            height: configAttributes.cell_height,
-            backgroundColor: cell['color'],
-            border: 1,
-            borderColor: 'black',
-            borderRadius: '50%',
-            display: 'flex',
-            flexDirection: 'row',
-            mb: 0.5,
+                width: configAttributes.cell_width,
+                height: configAttributes.cell_height,
+                backgroundColor: cell['color'],
+                border: 1,
+                borderColor: 'black',
+                borderRadius: '50%',
+                display: 'flex',
+                flexDirection: 'row',
+                mb: 0.5,
             }}
         />
     );
