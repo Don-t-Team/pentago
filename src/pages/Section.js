@@ -42,7 +42,7 @@ const Section = props => {
                         sectionIdx={sectionIdx}
                         row={row}
                         rowIdx={idx}
-                        onClickCallback={(colIdx) => onClickCallback(colIdx)}
+                        onClickCallback={(colIdx, rowIdx, sectionIdx) => onClickCallback(colIdx, rowIdx, sectionIdx)}
                     />
                 ))
             }

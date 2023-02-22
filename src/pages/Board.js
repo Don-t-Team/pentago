@@ -5,17 +5,74 @@ import Grid from "@mui/material/Grid"
 import TopMessage from './TopMessage'
 import Section from "./Section"
 
-import doWeHaveAWinner from "./doWeHaveAWinner"
 import configAttributes from "../config/attributes"
-import { color } from '@mui/system';
+import { render } from '@testing-library/react';
 
 const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
 
 const createInitialBoard = () => {
-    let board = Array(configAttributes.num_rows).fill(Array(configAttributes.num_columns).fill({color: "white", isOccupied: false}));
-    return board.map((row, rowIdx) => row.map( (col, colIdx) => {
-        return {...board[rowIdx][colIdx], row: rowIdx, column: colIdx }
+    const board = Array(configAttributes.num_rows).fill(Array(configAttributes.num_columns).fill({color: "white", isOccupied: false}));
+    const initialBoard = board.map((row, rowIdx) => row.map( (col, colIdx) => {
+        const sectionIdx = getSectionIndex(rowIdx, colIdx)
+        return {...board[rowIdx][colIdx], section: sectionIdx, row: rowIdx, column: colIdx }
     }));
+    // const boardforRender = renderBoard(initialBoard)
+    return initialBoard
+}
+
+const renderBoard = (board) => {
+    const getTopOrBottomSection = (start, end) => {
+        return board.slice(start, end)
+    }
+
+    const divideTopOrBottomSection = (section, startFirst, endFirst, startSecond, endSecond) => {
+        const first = section.map((row, rowIdx) => row.slice(startFirst, endFirst))
+        const second = section.map((row, rowIdx) => row.slice(startSecond, endSecond))
+        return [[...first], [...second]]
+    }
+
+    const topSection = getTopOrBottomSection(0, configAttributes.num_rows / 2)
+    const bottomSection = getTopOrBottomSection(configAttributes.num_rows / 2, configAttributes.num_rows)
+    const [topLeftSection, topRightSection] = divideTopOrBottomSection(topSection, 0, configAttributes.num_columns / 2, configAttributes.num_columns / 2, configAttributes.num_columns)
+    const [bottomLeftSection, bottomRightSection] = divideTopOrBottomSection(bottomSection, 0, configAttributes.num_columns / 2, configAttributes.num_columns / 2, configAttributes.num_columns)
+
+    const newBoard = [[...topLeftSection], [...topRightSection], [...bottomLeftSection], [...bottomRightSection]]
+
+
+    console.log('newBoard', newBoard)
+
+    return newBoard
+}
+
+// const createBoardForRender = (board) => {
+//     const sectionsIdx = Array(4).fill(true).map((_, index) => index)
+//     const newBoard = Array(4).fill(true).map(el => el)
+
+//     board.filter((row, rowIdx) => row.map((col, colIdx) => {
+//                if (board[rowIdx][colIdx]["section"] === String(0)) {
+//                     console.log(rowIdx, colIdx, board[rowIdx][colIdx]["section"])
+//                }
+//     }))
+
+    // sectionsIdx.map((sectionIdx, _) => {
+    //     const section = board.filter((row, rowIdx) => row.map((col, colIdx) => (
+    //         board[rowIdx][colIdx]["section"] === sectionIdx
+    //     )))
+    //     newBoard[sectionIdx] = section
+    // })
+    // return newBoard
+// }
+
+const getSectionIndex = (rowIdx, colIdx) => {
+    const mid = configAttributes.num_rows / 2
+    if (rowIdx < mid && colIdx < mid) 
+        return 0
+    if (rowIdx < mid && colIdx >= mid)
+        return 1
+    if (rowIdx >= mid && colIdx < mid)
+        return 2
+    if (rowIdx >= mid && colIdx >= mid)
+        return 3
 }
 
 const createInitialBoard2 = () => {
@@ -46,8 +103,6 @@ const doWeHaveAWinner = (moves, player, board) => {
                     return true
             }
             return false
-
-
         }
 
         if (state.every((cell, idx) => cell[0] === state[0][0]))
@@ -113,7 +168,8 @@ const mapSectionCellToBoardCell = (colIdx, rowIdx, sectionIdx) => {
 }
 
 export default function Board(props) {
-    const [board, setBoard] = useState(createInitialBoard2);
+    const [board, setBoard] = useState(createInitialBoard);
+    // const [boardForRender, setBoardForRender] = useState(() => renderBoard(board))
     const [haveAWinner, setHaveAWinner] = useState(false);
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
@@ -131,16 +187,57 @@ export default function Board(props) {
     };
 
     function onClickCallback(colIdx, rowIdx, sectionIdx) {
+
+        const mergeSections = (board) => {
+            // [[0, 1],
+            // [[2, 3]]
+            const newSectionIdx = [
+                Array(configAttributes.num_sections / 2).fill(true).map((_, index) => index),
+                Array(configAttributes.num_sections / 2).fill(true).map((_, index) => index + configAttributes.num_sections / 2)
+            ]
+
+            // [[0, 1], 
+            // [2, 3]] 
+            //  => [[0], 
+            //      [1]]
+            const mergedSections = newSectionIdx.map((horizontalSectionIdx, _) => {
+                // horizontalSectionIdx = [0, 1, ...]
+                const quarterIdx = horizontalSectionIdx[0]
+                let quarterAcc = board[quarterIdx].slice()
+
+                const remainingQuarterIdx = horizontalSectionIdx.slice(1)
+                remainingQuarterIdx.map((quarterIdx, _) => {
+                    const quarter = board[quarterIdx].slice()
+                    quarter.map((row, rowIdx) => {
+                        let rowAcc = quarterAcc[rowIdx].slice()
+                        rowAcc = [...rowAcc, ...row]
+                        quarterAcc[rowIdx] = rowAcc
+                    })
+                })
+                return quarterAcc
+            })
+
+            // const newTopSection = board[0].map((row, rowIdx) => (
+            //     [...board[0][rowIdx], ...board[1][rowIdx]]
+            // ))
+            // const newBottomSection = board[2].map((row, rowIdx) => (
+            //     [...board[2][rowIdx], ...board[3][rowIdx]]
+            // ))
+
+            console.log("mergedSections", mergedSections)
+            return mergedSections
+        }
+
         if( haveAWinner ) {
             return;
         }
         
         const [row, col] = mapSectionCellToBoardCell(colIdx, rowIdx, sectionIdx)
-        const newBoard = board.slice()
         const newColor = advanceColor(nextColor)
 
-        newBoard[row][col] = nextColor
-
+        const newBoard = mergeSections(board)
+        newBoard[row][col]["color"] = nextColor
+        
         const currentPlayer = nextColor === 'blue' ? 0 : 1
         const newMoves = moves.slice()
         newMoves[currentPlayer].push([row, col])
@@ -198,7 +295,7 @@ export default function Board(props) {
                         }}
                     >
                         {
-                            board.map((section, sectionIdx) => 
+                            renderBoard(board).map((section, sectionIdx) => 
                                 <Section 
                                     data_class="section"
                                     width={calcSectionWidth(sectionIdx)}
@@ -206,7 +303,7 @@ export default function Board(props) {
                                     key={sectionIdx}
                                     section={section}
                                     sectionIdx={sectionIdx}
-                                    onClickCallback={(colIdx) => onClickCallback(colIdx)}
+                                    onClickCallback={(colIdx, rowIdx, sectionIdx) => onClickCallback(colIdx, rowIdx, sectionIdx)}
                                 />
                             )
                         }

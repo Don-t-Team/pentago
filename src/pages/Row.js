@@ -6,7 +6,7 @@ import configAttributes from "../config/attributes"
 const Row = props => {
     const {onClickCallback, row, rowIdx, sectionIdx} = props;
 
-    // console.log("row", row)
+    console.log("row", row)
 
     return (
         <Grid 
