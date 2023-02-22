@@ -6,7 +6,6 @@ import TopMessage from './TopMessage'
 import Section from "./Section"
 
 import configAttributes from "../config/attributes"
-import { render } from '@testing-library/react';
 
 const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
 
@@ -16,7 +15,6 @@ const createInitialBoard = () => {
         const sectionIdx = getSectionIndex(rowIdx, colIdx)
         return {...board[rowIdx][colIdx], section: sectionIdx, row: rowIdx, column: colIdx }
     }));
-    // const boardforRender = renderBoard(initialBoard)
     return initialBoard
 }
 
@@ -44,25 +42,6 @@ const renderBoard = (board) => {
     return newBoard
 }
 
-// const createBoardForRender = (board) => {
-//     const sectionsIdx = Array(4).fill(true).map((_, index) => index)
-//     const newBoard = Array(4).fill(true).map(el => el)
-
-//     board.filter((row, rowIdx) => row.map((col, colIdx) => {
-//                if (board[rowIdx][colIdx]["section"] === String(0)) {
-//                     console.log(rowIdx, colIdx, board[rowIdx][colIdx]["section"])
-//                }
-//     }))
-
-    // sectionsIdx.map((sectionIdx, _) => {
-    //     const section = board.filter((row, rowIdx) => row.map((col, colIdx) => (
-    //         board[rowIdx][colIdx]["section"] === sectionIdx
-    //     )))
-    //     newBoard[sectionIdx] = section
-    // })
-    // return newBoard
-// }
-
 const getSectionIndex = (rowIdx, colIdx) => {
     const mid = configAttributes.num_rows / 2
     if (rowIdx < mid && colIdx < mid) 
@@ -87,6 +66,10 @@ const createInitialSection = () => {
     return section.map((row, rowIdx) => row.map((col, colIdx) => ({...section[rowIdx][colIdx], row: rowIdx, column: colIdx})))
 }
 
+const createInitialMoves = () => {
+    return Array(2).fill(true).map(() => [])
+}
+
 const doWeHaveAWinner = (moves, player, board) => {
     const startState = moves.slice()
     const frontier = [startState]
@@ -94,8 +77,6 @@ const doWeHaveAWinner = (moves, player, board) => {
 
     const goalTest = (state) => {
         const diagonalCheck = (curCell, nextCell) => {
-             (Math.abs(curCell[0] - nextCell[0]) < 1 && Math.abs(curCell[1] - nextCell[1] < 1))
-
             for (let i = -1; i <= 1; i++) {
                 if (i === 0)
                     continue
@@ -105,15 +86,20 @@ const doWeHaveAWinner = (moves, player, board) => {
             return false
         }
 
-        if (state.every((cell, idx) => cell[0] === state[0][0]))
-            return true
-        
-        if (state.every((cell, idx) => cell[1] === state[0][1]))
+        const horizontalCheck = (firstCell) =>
+            state.every((curCell, _) => (curCell[0] === firstCell[0])
+        )
+
+        const verticalCheck = (firstCell) => (
+            state.every((curCell, _) => (curCell[0] === firstCell[0]))
+        )
+
+        if (horizontalCheck(state[0]) || verticalCheck(state[0]) || diagonalCheck())
             return true
 
-        const curIdx = 0
-        const nextIdx = 1
-        const count = 0
+        let curIdx = 0
+        let nextIdx = 1
+        let count = 0
         while (nextIdx < state.length && !processed[state[curIdx][0]][state[curIdx][1]] && diagonalCheck(state[curIdx], state[nextIdx])) {
             curIdx = nextIdx
             nextIdx++
@@ -130,8 +116,11 @@ const doWeHaveAWinner = (moves, player, board) => {
                 if (i === 0) continue;
                 const newRow = cell[0] + i
                 const newCol = cell[1] + i
-                if (!processed[newRow][newCol])
-                    successors.push([newRow, newCol])
+                // if (newRow >= 0 && newRow < configAttributes.num_rows
+                //     && newCol >= 0 && newCol < configAttributes.num_columns
+                //     && !processed[newRow][newCol]
+                //    )
+                successors.push([newRow, newCol])
             }
         }
         return successors
@@ -139,7 +128,10 @@ const doWeHaveAWinner = (moves, player, board) => {
 
     while (frontier.length > 0) {
         const state = frontier.shift()
-        if (goalTest(state)) return true
+        if (goalTest(state)) {
+            console.log("winning state", state)
+            return true
+        }
         const successors = getSuccessors(state)
         for (let i in successors) 
             frontier.push(successors[i])
@@ -153,16 +145,16 @@ const mapSectionCellToBoardCell = (colIdx, rowIdx, sectionIdx) => {
         return [rowIdx, colIdx]
     }
     if (sectionIdx === 1) {
-        const newColIdx = configAttributes.num_columns / 2 - 1 + colIdx
+        const newColIdx = configAttributes.num_columns / 2 + colIdx
         return [rowIdx, newColIdx]
     }
     if (sectionIdx === 2) {
-        const newRowIdx = configAttributes.num_rows / 2 - 1 + rowIdx
+        const newRowIdx = configAttributes.num_rows / 2 + rowIdx
         return [newRowIdx, colIdx]
     }
     if (sectionIdx === 3) {
-        const newRowIdx = configAttributes.num_rows / 2 - 1 + rowIdx
-        const newColIdx = configAttributes.num_cols / 2 - 1 + colIdx
+        const newRowIdx = configAttributes.num_rows / 2 + rowIdx
+        const newColIdx = configAttributes.num_columns / 2 + colIdx
         return [newRowIdx, newColIdx]
     }
 }
@@ -174,7 +166,7 @@ export default function Board(props) {
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
     
-    const [moves, setMoves] = useState(Array(2).fill([]))
+    const [moves, setMoves] = useState(Array(2).fill(true).map(() => []))
 
     const [firstAvailableIndex, setFirstAvailableIndex] =
         useState(() => Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
@@ -217,13 +209,6 @@ export default function Board(props) {
                 return quarterAcc
             })
 
-            // const newTopSection = board[0].map((row, rowIdx) => (
-            //     [...board[0][rowIdx], ...board[1][rowIdx]]
-            // ))
-            // const newBottomSection = board[2].map((row, rowIdx) => (
-            //     [...board[2][rowIdx], ...board[3][rowIdx]]
-            // ))
-
             console.log("mergedSections", mergedSections)
             return mergedSections
         }
@@ -233,16 +218,19 @@ export default function Board(props) {
         }
         
         const [row, col] = mapSectionCellToBoardCell(colIdx, rowIdx, sectionIdx)
-        const newColor = advanceColor(nextColor)
+        // const newBoard = mergeSections(board)
 
-        const newBoard = mergeSections(board)
+        const newBoard = board.slice()
+        
+        const newColor = advanceColor(nextColor)
         newBoard[row][col]["color"] = nextColor
         
         const currentPlayer = nextColor === 'blue' ? 0 : 1
         const newMoves = moves.slice()
         newMoves[currentPlayer].push([row, col])
-        if (newMoves.length === 5 && doWeHaveAWinner(newMoves[currentPlayer])) {
+        if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, board)) {
             setHaveAWinner(true)
+            setMoves(createInitialMoves)
             setWinnerColor(nextColor);
         }
         
