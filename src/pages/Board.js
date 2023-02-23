@@ -37,7 +37,7 @@ const renderBoard = (board) => {
     const newBoard = [[...topLeftSection], [...topRightSection], [...bottomLeftSection], [...bottomRightSection]]
 
 
-    console.log('newBoard', newBoard)
+    // console.log('newBoard', newBoard)
 
     return newBoard
 }
@@ -76,52 +76,69 @@ const doWeHaveAWinner = (moves, player, board) => {
     const processed = Array(board.length).fill(Array(board[0].length).fill(false))
 
     const goalTest = (state) => {
-        const diagonalCheck = (curCell, nextCell) => {
-            for (let i = -1; i <= 1; i++) {
-                if (i === 0)
-                    continue
-                if (curCell[0] - nextCell[0] === i && curCell[1] - nextCell[1] === -i)
-                    return true
+
+        const diagonalCheck = () => {
+            const helper = (curCell, nextCell) => {
+                // for (let i = -1; i <= 1; i++) {
+                //     if (i === 0)
+                //         continue
+                    // when current cell is the same as the initial value of previous cell
+                    if (curCell === nextCell)
+                        return true
+
+                    if (nextCell[0] - curCell[0] === nextCell[1] - curCell[1])
+                        return true
+                // }
+                return false
             }
-            return false
+
+            const result = state.reduce((prevCell, curCell) => {
+                if (!processedCheck(curCell) && helper(prevCell, curCell)) {
+                    return prevCell
+                }
+                return curCell
+            }, state[0])
+
+            return result === state[0]
         }
 
-        const horizontalCheck = (firstCell) =>
-            state.every((curCell, _) => (curCell[0] === firstCell[0])
+        const horizontalCheck = () =>
+            state.every((curCell, _) => (curCell[0] === state[0][0])
         )
 
-        const verticalCheck = (firstCell) => (
-            state.every((curCell, _) => (curCell[0] === firstCell[0]))
+        const verticalCheck = () => (
+            state.every((curCell, _) => (curCell[1] === state[0][1]))
         )
 
-        if (horizontalCheck(state[0]) || verticalCheck(state[0]) || diagonalCheck())
+        const processedCheck = (cell) => {
+            return processed[cell[0]][cell[1]]
+        }
+
+        const nullCheck = () => {
+            return state.some((cell, _) => cell === null)
+        }
+
+        if (nullCheck())
+            return false
+
+        if (horizontalCheck() || verticalCheck() || diagonalCheck())
             return true
 
-        let curIdx = 0
-        let nextIdx = 1
-        let count = 0
-        while (nextIdx < state.length && !processed[state[curIdx][0]][state[curIdx][1]] && diagonalCheck(state[curIdx], state[nextIdx])) {
-            curIdx = nextIdx
-            nextIdx++
-            count++
-        }
-
-        return count === 5
+        return false
     }
 
     const getSuccessors = (state) => {
         const successors = []
-        for (let cell of state) {
-            for (let i = -1; i <= 1; i++) {
-                if (i === 0) continue;
-                const newRow = cell[0] + i
-                const newCol = cell[1] + i
-                // if (newRow >= 0 && newRow < configAttributes.num_rows
-                //     && newCol >= 0 && newCol < configAttributes.num_columns
-                //     && !processed[newRow][newCol]
-                //    )
-                successors.push([newRow, newCol])
-            }
+        for (let i = -1; i <= 1; i++) {
+            if (i === 0) continue;
+                successors.push(state.map((cell, _) => cell[0] + i < 0 || cell[0] + i > configAttributes.num_rows
+                    ? null
+                    : board[cell[0] + i][cell[1]]
+                ))
+                successors.push(state.map((cell, _) => cell[1] + i < 0 || cell[1] + i > configAttributes.num_columns
+                    ? null
+                    : board[cell[0]][cell[1] + i]
+                ))
         }
         return successors
     }
@@ -133,8 +150,7 @@ const doWeHaveAWinner = (moves, player, board) => {
             return true
         }
         const successors = getSuccessors(state)
-        for (let i in successors) 
-            frontier.push(successors[i])
+        successors.forEach((successor) => {frontier.push(successor)})
     }
 
     return false
@@ -161,7 +177,6 @@ const mapSectionCellToBoardCell = (colIdx, rowIdx, sectionIdx) => {
 
 export default function Board(props) {
     const [board, setBoard] = useState(createInitialBoard);
-    // const [boardForRender, setBoardForRender] = useState(() => renderBoard(board))
     const [haveAWinner, setHaveAWinner] = useState(false);
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
@@ -261,6 +276,8 @@ export default function Board(props) {
     }
     
     const width = calcWidth()
+
+    console.log("moves", moves)
 
     return (
         <Fragment>
