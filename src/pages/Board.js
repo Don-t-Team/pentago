@@ -102,57 +102,125 @@ const doWeHaveAWinner = (moves, player, board) => {
             return result === state[0]
         }
 
-        const horizontalCheck = () =>
-            state.every((curCell, _) => (curCell[0] === state[0][0])
+        const horizontalCheck = (mostOccCol, occurrences) => (
+            occurrences < 5
+                ? false
+                : state.filter((curCell, _) => (curCell[1] === mostOccCol)) === configAttributes.num_columns - 1
         )
 
-        const verticalCheck = () => (
-            state.every((curCell, _) => (curCell[1] === state[0][1]))
+        const verticalCheck = (mostOccRow, occurrences) => (
+            occurrences < 5
+                ? false
+                : state.filter((curCell, _) => (curCell[0] === mostOccRow)) === configAttributes.num_rows - 1
         )
+
+        const find = (obj) => {
+            const cells = Object.keys(obj)
+            const occurrences = Object.values(obj)
+
+            const mostOccurred = occurrences.reduce((most, occ, idx) => (
+                occ > most[1]
+                    ? [cells[idx], occ]
+                    : [cells[idx], most[1]]
+            ), [cells[0], occurrences[0]])
+
+            return mostOccurred
+        }
+
+        const mostOccIndex = () => {
+            let occRows = {}
+            let occCols = {}
+            state.map((cell, _) => {
+                occRows[cell[0]] == null
+                    ? occRows[cell[0]] = 1
+                    : occRows[cell[0]]++
+            })
+            state.map((cell, _) => {
+                occCols[cell[1]] == null
+                    ? occCols[cell[1]] = 1
+                    : occCols[cell[1]]++
+            })
+
+            // console.log(Object.values(occRows))
+            // console.log(Object.values(occCols))
+
+            const [mostOccRow, occRow] = find(occRows)
+            const [mostOccCol, occCol] = find(occCols)
+
+            return {
+                mostOccRow, occRow,
+                mostOccCol, occCol
+            }
+        }
 
         const processedCheck = (cell) => {
             return processed[cell[0]][cell[1]]
         }
 
         const nullCheck = () => {
-            return state.some((cell, _) => cell === null)
+            return state.some((cell, _) => cell == null)
         }
 
         if (nullCheck())
             return false
 
-        if (horizontalCheck() || verticalCheck() || diagonalCheck())
+        const { mostOccRow, occRow, mostOccCol, occCol } = mostOccIndex()
+
+        if (horizontalCheck(mostOccCol, occCol) || verticalCheck(mostOccRow, occRow) || diagonalCheck())
             return true
 
         return false
+    }
+
+    const nullCheck = (state) => {
+        return state.every((cell, _) => cell !== null)
     }
 
     const getSuccessors = (state) => {
         const successors = []
         for (let i = -1; i <= 1; i++) {
             if (i === 0) continue;
-                successors.push(state.map((cell, _) => cell[0] + i < 0 || cell[0] + i > configAttributes.num_rows
+                const newStateHorizontal = state.map((cell, _) => cell[0] + i < 0 || cell[0] + i === configAttributes.num_rows
                     ? null
-                    : board[cell[0] + i][cell[1]]
-                ))
-                successors.push(state.map((cell, _) => cell[1] + i < 0 || cell[1] + i > configAttributes.num_columns
+                    : [cell[0] + i, cell[1]]
+                ) 
+                const newStateVertical = state.map((cell, _) => cell[1] + i < 0 || cell[1] + i === configAttributes.num_columns
                     ? null
-                    : board[cell[0]][cell[1] + i]
-                ))
+                    : [cell[0], cell[1] + i]
+                )  
+                if (nullCheck(newStateHorizontal))
+                    successors.push(newStateHorizontal)
+                if (nullCheck(newStateVertical))
+                    successors.push(newStateVertical)
         }
         return successors
     }
 
-    while (frontier.length > 0) {
-        const state = frontier.shift()
-        if (goalTest(state)) {
-            console.log("winning state", state)
+    const isUniqueState = (state) => {
+        const key = state.reduce((sum, cell, cellIdx) => (sum + cell[0] + cell[1]), 0)
+        if (uniqueStates[key] == null) {
+            uniqueStates[key] = [state]
             return true
         }
-        const successors = getSuccessors(state)
-        successors.forEach((successor) => {frontier.push(successor)})
+        uniqueStates[key].push(state)
+        return false
     }
 
+    const uniqueStates = {}
+
+    while (frontier.length > 0) {
+        const state = frontier.shift()
+        if (isUniqueState(state)) {
+            if (goalTest(state)) {
+                console.log("winning state", state)
+                return true
+            }
+            const successors = getSuccessors(state)
+            successors.forEach((successor) => {
+                    frontier.push(successor)
+            })
+        }
+    }
     return false
 }
 
