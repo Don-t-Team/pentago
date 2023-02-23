@@ -78,50 +78,86 @@ const doWeHaveAWinner = (moves, player, board) => {
     const goalTest = (state) => {
 
         const diagonalCheck = () => {
-            const helper = (curCell, nextCell) => {
-                // for (let i = -1; i <= 1; i++) {
-                //     if (i === 0)
-                //         continue
-                    // when current cell is the same as the initial value of previous cell
-                    if (curCell === nextCell)
-                        return true
+            // const helper = (curCell, nextCell) => {
+            //     // for (let i = -1; i <= 1; i++) {
+            //     //     if (i === 0)
+            //     //         continue
+            //         // when current cell is the same as the initial value of previous cell
+            //         if (curCell === nextCell)
+            //             return true
 
-                    if (nextCell[0] - curCell[0] === nextCell[1] - curCell[1])
-                        return true
-                // }
-                return false
+            //         if (nextCell[0] - curCell[0] === nextCell[1] - curCell[1])
+            //             return true
+            //     // }
+            //     return false
+            // }
+
+            // const result = state.reduce((prevCell, curCell) => {
+            //     if (!processedCheck(curCell) && helper(prevCell, curCell)) {
+            //         return prevCell
+            //     }
+            //     return curCell
+            // }, state[0])
+
+
+            
+            const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[0]]))
+            const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[1]]))
+            
+            let start = state[0]
+            let curRow = rows[start[0]]
+            let curCol = cols[start[0]]
+            let count = 0
+            while (rows[curRow] != null && cols[curCol] != null) {
+                const newRow = curRow + 1
+                const newCol = curCol + 1
+                if (rows[newRow] && cols[newCol])
+                    count++
+                curRow = newRow
+                curCol = newCol
             }
 
-            const result = state.reduce((prevCell, curCell) => {
-                if (!processedCheck(curCell) && helper(prevCell, curCell)) {
-                    return prevCell
-                }
-                return curCell
-            }, state[0])
+            if (count >= 5)
+                return true
 
-            return result === state[0]
+            start = state[0]
+            curRow = rows[start[0]]
+            curCol = cols[start[0]]
+
+            while (rows[curRow] != null && cols[curCol] != null) {
+                const newRow = curRow - 1
+                const newCol = curCol - 1
+                if (rows[newRow] && cols[newCol])
+                    count++
+                curRow = newRow
+                curCol = newCol
+            }
+
+            return count >= 5
         }
 
-        const horizontalCheck = (mostOccCol, occurrences) => (
-            occurrences < 5
-                ? false
-                : state.filter((curCell, _) => (curCell[1] === mostOccCol)) === configAttributes.num_columns - 1
-        )
+        const horizontalCheck = (mostOccCol, occurrences) => {
+            if (occurrences < 5) {
+                return false
+            }
+            const res = state.filter((curCell, _) => (curCell[1] === mostOccCol))
+            return res.length >= configAttributes.num_columns - 1
+        }
 
         const verticalCheck = (mostOccRow, occurrences) => (
             occurrences < 5
                 ? false
-                : state.filter((curCell, _) => (curCell[0] === mostOccRow)) === configAttributes.num_rows - 1
+                : state.filter((curCell, _) => (curCell[0] === mostOccRow)).length >= configAttributes.num_rows - 1
         )
 
         const find = (obj) => {
-            const cells = Object.keys(obj)
+            const cells = Object.keys(obj).map((el) => parseInt(el))
             const occurrences = Object.values(obj)
 
             const mostOccurred = occurrences.reduce((most, occ, idx) => (
                 occ > most[1]
                     ? [cells[idx], occ]
-                    : [cells[idx], most[1]]
+                    : [most[0], most[1]]
             ), [cells[0], occurrences[0]])
 
             return mostOccurred
