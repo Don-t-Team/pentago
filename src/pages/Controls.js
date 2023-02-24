@@ -4,6 +4,7 @@ import { Grid } from "@mui/material"
 
 const Controls = (props) => {
 
+    const { onRotateCallback } = props
 
     return (
         <Grid
@@ -18,8 +19,12 @@ const Controls = (props) => {
             }}
             container 
             data_class="controllers">
-            <Button text={"rotate"} />
-            <Button text={"enter"} />
+            <Grid item onClick={() => onRotateCallback()}>
+                <Button text={"rotate"}/>
+            </Grid>
+            <Grid item>
+                <Button text={"enter"} />
+            </Grid>
         </Grid>
     )
 }
