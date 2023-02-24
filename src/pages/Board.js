@@ -269,6 +269,8 @@ export default function Board(props) {
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
     const [activeSectionIdx, setActiveSectionIdx] = useState(null)
+    const [pick, setPick] = useState(true)
+    const [rotate, setRotate] = useState(false)
     
     const [moves, setMoves] = useState(createInitialMoves)
 
@@ -283,14 +285,21 @@ export default function Board(props) {
         // setFirstAvailableIndex(Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
     };
 
+    const getCurrentPlayer = () => (
+        nextColor === 'blue' ? 0 : 1
+    )
+
     function onClickCallback(colIdx, rowIdx, sectionIdx) {
         if( haveAWinner ) {
+            return;
+        }
+
+        if (!pick) {
             return;
         }
         
         const [row, col] = mapSectionCellToBoardCell(colIdx, rowIdx, sectionIdx)
         const activeSectionIdx = getSectionIndex(row, col)
-        setActiveSectionIdx(activeSectionIdx)
 
         if (board[row][col].isOccupied)
             return
@@ -301,7 +310,7 @@ export default function Board(props) {
         newBoard[row][col]["color"] = nextColor
         newBoard[row][col]["isOccupied"] = true
         
-        const currentPlayer = nextColor === 'blue' ? 0 : 1
+        const currentPlayer = getCurrentPlayer()
         const newMoves = moves.slice()
         newMoves[currentPlayer].push([row, col])
         if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, board)) {
@@ -310,9 +319,12 @@ export default function Board(props) {
             setWinnerColor(nextColor);
         }
         
+        setActiveSectionIdx(activeSectionIdx)
         setBoard(newBoard)
         setNextColor(newColor)
         setMoves(newMoves)
+        setPick(false)
+        setRotate(true)
     }
 
     const calcWidth = () => { 
@@ -337,6 +349,11 @@ export default function Board(props) {
     }
 
     const onRotateCallback = () => {
+
+        if (!rotate) {
+            return;
+        }
+
         const activeSection = getActiveSection(activeSectionIdx, board)
 
         // get index array of all cells in the active section
@@ -367,6 +384,15 @@ export default function Board(props) {
         }))
 
         setBoard(newBoard)
+
+        const currentPlayer = getCurrentPlayer()
+        const currentPlayerMoves = moves[currentPlayer].slice()
+        if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, board))
+            setHaveAWinner(nextColor)
+            setWinnerColor(nextColor)
+
+        setRotate(false)
+        setPick(true)       
     }
     
     const width = calcWidth()
