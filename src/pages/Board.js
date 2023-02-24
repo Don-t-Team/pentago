@@ -338,15 +338,18 @@ export default function Board(props) {
 
     const onRotateCallback = () => {
         const activeSection = getActiveSection(activeSectionIdx, board)
-        // rotate section
+
+        // get index array of all cells in the active section
         const activeCellsIdx = activeSection.map((row) => row.map((_, cellIdx) => cellIdx))
         
+        // create new active section with color set to white
         const newActiveSection = activeSection.map((row) => row.map(cell => {
             const newCell = {...cell}
             newCell['color'] = 'white'
             return newCell
         }))
 
+         // rotate section 90 degrees clockwise
         activeCellsIdx.forEach((row, rowIdx) => row.forEach((colIdx, _) => {
             let newColIdx
             let newRowIdx = colIdx
@@ -356,35 +359,12 @@ export default function Board(props) {
             newActiveSection[newRowIdx][newColIdx] = activeSection[rowIdx][colIdx]
         }))
 
+        // creates new board with the new active section
         const newBoard = board.slice()
         newActiveSection.forEach((row, rowIdx) => row.forEach((cell, colIdx) => {
             const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(colIdx, rowIdx, activeSectionIdx)
-            // newBoard[boardRowIdx][boardColIdx] = newActiveSection[rowIdx][colIdx] 
             newBoard[boardRowIdx][boardColIdx] = cell
         }))
-
-        // const newBoard = board.slice()
-        // board.forEach((row, rowIdx) => row.forEach((cell, cellIdx) => {
-        //     const sectionIdx = getSectionIndex(rowIdx, cellIdx)
-        //     if (sectionIdx === activeSectionIdx) {
-        //         if (cellIdx < configAttributes.num_columns / 2) {
-        //             let newColIdx
-        //             let newRowIdx = cellIdx
-        //             let mid = configAttributes.num_rows / 2
-        //             if (rowIdx < mid) {
-        //                 if (rowIdx === 0) newColIdx = 2
-        //                 if (rowIdx === 1) newColIdx = 1
-        //                 if (rowIdx === 2) newColIdx = 0
-        //             }
-        //             else {
-        //                 if (rowIdx === mid + 0) newColIdx = mid + 2
-        //                 if (rowIdx === mid + 1) newColIdx = mid + 1
-        //                 if (rowIdx === mid + 2) newColIdx = mid + 0
-        //             }
-        //             newBoard[newRowIdx][newColIdx] = cell
-        //         }
-        //     }
-        // }))
 
         setBoard(newBoard)
     }
