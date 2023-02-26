@@ -7,6 +7,7 @@ import Section from "./Section"
 import Controls from "./Controls"
 
 import configAttributes from "../config/attributes"
+import Modal from '../components/Modal';
 
 const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
 
@@ -269,8 +270,11 @@ export default function Board(props) {
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
     const [activeSectionIdx, setActiveSectionIdx] = useState(null)
+    const [rotateSectionIdx, setRotateSectionIdx] = useState(null)
     const [pick, setPick] = useState(true)
     const [rotate, setRotate] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false)
+    const [modalMessage, setModalMessage] = useState("")
     
     const [moves, setMoves] = useState(createInitialMoves)
 
@@ -348,12 +352,7 @@ export default function Board(props) {
         (num_rows - 1) * configAttributes.h_gap + marginBottom
     }
 
-    const onRotateCallback = () => {
-
-        if (!rotate) {
-            return;
-        }
-
+    const onRotateCallbackHelper = () => {
         const activeSection = getActiveSection(activeSectionIdx, board)
 
         // get index array of all cells in the active section
@@ -392,7 +391,23 @@ export default function Board(props) {
             setWinnerColor(nextColor)
 
         setRotate(false)
-        setPick(true)       
+        setPick(true)
+    }
+
+    const onRotateCallback = () => {
+        if (!rotate) {
+            return;
+        }
+
+        setModalOpen(true)
+        setModalMessage("Select a section to rotate")
+               
+    }
+
+    const onModalClickCallback = (sectionIdx) => {
+        console.log("section to rotate", sectionIdx)
+        setModalOpen(false)
+        setModalMessage("")
     }
     
     const width = calcWidth()
@@ -403,7 +418,7 @@ export default function Board(props) {
         <Fragment>
             <Stack
                 data_class="stack" 
-                sx={{ width: width, m: 'auto', mt: 15 }}>
+                sx={{ width: width, m: 'auto', mt: 15, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                 <TopMessage nextColor={nextColor}
                             winnerColor={winnerColor}
                             haveAWinner={haveAWinner}
@@ -435,6 +450,7 @@ export default function Board(props) {
                     </Grid>
                 }
                 <Controls onRotateCallback={onRotateCallback}/>
+                <Modal open={modalOpen} message={modalMessage} onModalClickCallback={onModalClickCallback}/>
             </Stack>
         </Fragment>
     );
