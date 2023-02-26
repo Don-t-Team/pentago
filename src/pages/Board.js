@@ -378,7 +378,7 @@ export default function Board(props) {
         // creates new board with the new active section
         const newBoard = board.slice()
         newActiveSection.forEach((row, rowIdx) => row.forEach((cell, colIdx) => {
-            const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(colIdx, rowIdx, activeSectionIdx)
+            const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(colIdx, rowIdx, sectionIdx)
             newBoard[boardRowIdx][boardColIdx] = cell
         }))
 
