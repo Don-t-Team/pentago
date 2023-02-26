@@ -245,7 +245,7 @@ const doWeHaveAWinner = (moves, player, board) => {
     return false
 }
 
-const mapSectionCellToBoardCell = (colIdx, rowIdx, sectionIdx) => {
+const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
     if (sectionIdx === 0) {
         return [rowIdx, colIdx]
     }
@@ -286,6 +286,7 @@ export default function Board(props) {
         setMoves(createInitialMoves());
         setHaveAWinner(false);
         setNextColor('blue');
+        setPick(true)
         // setFirstAvailableIndex(Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
     };
 
@@ -302,7 +303,7 @@ export default function Board(props) {
             return;
         }
         
-        const [row, col] = mapSectionCellToBoardCell(colIdx, rowIdx, sectionIdx)
+        const [row, col] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
         const activeSectionIdx = getSectionIndex(row, col)
 
         if (board[row][col].isOccupied)
@@ -353,8 +354,14 @@ export default function Board(props) {
     }
 
     const rotateSection = (sectionIdx) => {
-        const activeSection = getActiveSection(sectionIdx, board)
 
+        // const rotateMovesInRotatedSection = () => {
+            
+        // }
+
+        const activeSection = getActiveSection(sectionIdx, board)
+        const newMoves = moves.slice()
+        
         // get index array of all cells in the active section
         const activeCellsIdx = activeSection.map((row) => row.map((_, cellIdx) => cellIdx))
         
@@ -373,23 +380,53 @@ export default function Board(props) {
             if (rowIdx === 1) newColIdx = 1
             if (rowIdx === 2) newColIdx = 0
             newActiveSection[newRowIdx][newColIdx] = activeSection[rowIdx][colIdx]
+            const [oldBoardRowIdx, oldBoardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
+            const [newBoardRowIdx, newBoardColIdx] = mapSectionCellToBoardCell(newRowIdx, newColIdx, sectionIdx)
+            
+            // get the color of player move in the section to rotate
+            const playerColor = board[oldBoardRowIdx][oldBoardColIdx]["color"]
+            let player
+            if (playerColor !== "white" && playerColor === "blue")
+                player = 0
+            else if (playerColor === "red")
+                player = 1
+
+            // get the moves of the player if the cell is not occupied
+            if (player === 0 || player === 1) {
+                const playerMoves = newMoves[player].slice()
+                // rotates the moves the player have made if the move is in the section
+                // to rotate
+                // [oldBoardRowIdx, oldBoardColIdx] is the cell to be rotated and is in
+                // the array of moves the player has made
+                // [newBoardRowIdx, newBoardColIdx] is the new cell in the array of moves
+                // of the player
+                const newPlayerMoves = playerMoves.map((move) => {
+                    if (move[0] === oldBoardRowIdx && move[1] === oldBoardColIdx)
+                        return [newBoardRowIdx, newBoardColIdx]
+                    else
+                        move.slice()
+                })
+                if (newPlayerMoves != null)
+                    newMoves[player] = newPlayerMoves
+            }
         }))
 
         // creates new board with the new active section
         const newBoard = board.slice()
         newActiveSection.forEach((row, rowIdx) => row.forEach((cell, colIdx) => {
-            const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(colIdx, rowIdx, sectionIdx)
+            const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
             newBoard[boardRowIdx][boardColIdx] = cell
         }))
 
-        setBoard(newBoard)
-
         const currentPlayer = getCurrentPlayer()
-        const currentPlayerMoves = moves[currentPlayer].slice()
-        if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, board))
+        const currentPlayerMoves = newMoves[currentPlayer].slice()
+
+        if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, newBoard))
             setHaveAWinner(nextColor)
             setWinnerColor(nextColor)
 
+        setBoard(newBoard)
+        setMoves(newMoves)
         setRotate(false)
         setPick(true)
     }

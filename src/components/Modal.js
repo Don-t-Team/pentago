@@ -18,7 +18,7 @@ const CustomModal = (props) => {
                     transform: "translate(-50%, -50%)",
                     position: "absolute",
                     margin: "auto",
-                    top: "50%",
+                    top: "85%",
                     left: "50%",
                     color: "black",
                     display: "flex",
