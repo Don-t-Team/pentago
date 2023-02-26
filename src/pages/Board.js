@@ -352,8 +352,8 @@ export default function Board(props) {
         (num_rows - 1) * configAttributes.h_gap + marginBottom
     }
 
-    const onRotateCallbackHelper = () => {
-        const activeSection = getActiveSection(activeSectionIdx, board)
+    const rotateSection = (sectionIdx) => {
+        const activeSection = getActiveSection(sectionIdx, board)
 
         // get index array of all cells in the active section
         const activeCellsIdx = activeSection.map((row) => row.map((_, cellIdx) => cellIdx))
@@ -398,7 +398,8 @@ export default function Board(props) {
         if (!rotate) {
             return;
         }
-
+        // prevents picking a new cell by setting rotate to false
+        setRotate(true)
         setModalOpen(true)
         setModalMessage("Select a section to rotate")
                
@@ -406,6 +407,7 @@ export default function Board(props) {
 
     const onModalClickCallback = (sectionIdx) => {
         console.log("section to rotate", sectionIdx)
+        rotateSection(sectionIdx)
         setModalOpen(false)
         setModalMessage("")
     }
