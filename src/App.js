@@ -1,7 +1,8 @@
 import logo from './logo.svg';
 import './App.css';
 
-import Board from './pages/Board';
+// import Board from './pages/Board';
+import Board from './pages/Board2'
 import { Fragment } from 'react';
 
 function App() {
