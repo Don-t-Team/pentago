@@ -348,8 +348,7 @@ export default function Board (props) {
         const currentPlayer = getCurrentPlayer()
         const newMoves = moves.slice()
 
-        if (newMoves[currentPlayer].filter((move, _) => move[0] === sectionIdx && move[1] === rowIdx && move[2] === colIdx).length < 1)
-            newMoves[currentPlayer].push([sectionIdx, rowIdx, colIdx])
+        newMoves[currentPlayer].push([sectionIdx, rowIdx, colIdx])
 
         if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, newBoard)) {
             setHaveAWinner(true)
@@ -388,7 +387,7 @@ export default function Board (props) {
 
     const rotateSection = (sectionIdx) => {
 
-        // const activeSection = getActiveSection(sectionIdx, board)
+        const rotatingSectionIdx = sectionIdx
         const activeSection = board[sectionIdx].slice()
         const newMoves = moves.slice()
         
@@ -412,8 +411,7 @@ export default function Board (props) {
             if (oldRowIdx === 1) newColIdx = 1
             if (oldRowIdx === 2) newColIdx = 0
             newActiveSection[newRowIdx][newColIdx] = activeSection[oldRowIdx][oldColIdx]
-            // const [oldBoardRowIdx, oldBoardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
-            // const [newBoardRowIdx, newBoardColIdx] = mapSectionCellToBoardCell(newRowIdx, newColIdx, sectionIdx)
+
             
             // get the color of player move in the section to rotate
             const playerColor = board[sectionIdx][oldRowIdx][oldColIdx]["color"]
@@ -423,24 +421,40 @@ export default function Board (props) {
             else if (playerColor === "red")
                 player = 1
 
-            // get the moves of the player if the cell is not occupied
+            // rebuilds player moves
             if (player === 0 || player === 1) {
                 const playerMoves = newMoves[player].slice()
-                // rotates the moves the player have made if the move is in the section
-                // to rotate
-                // [oldBoardRowIdx, oldBoardColIdx] is the cell to be rotated and is in
-                // the array of moves the player has made
-                // [newBoardRowIdx, newBoardColIdx] is the new cell in the array of moves
-                // of the player
                 const newPlayerMoves = playerMoves.map((move) => {
-                    if (moves[0] === sectionIdx && move[1] === oldRowIdx && move[2] === oldColIdx)
-                        return [newRowIdx, newColIdx]
-                    else
-                        return move.slice()
+                    const [sectionIdx, rowIdx, colIdx] = move
+                    if (sectionIdx === rotatingSectionIdx && rowIdx === oldRowIdx && colIdx === oldColIdx) {
+                        return [sectionIdx, newRowIdx, newColIdx]
+                    }
+                    else {
+                        return move
+                    }
                 })
-                if (newPlayerMoves != null)
-                    newMoves[player] = newPlayerMoves
+
+                newMoves[player] = newPlayerMoves
             }
+
+            // // get the moves of the player if the cell is not occupied
+            // if (player === 0 || player === 1) {
+            //     const playerMoves = newMoves[player].slice()
+            //     // rotates the moves the player have made if the move is in the section
+            //     // to rotate
+            //     // [oldBoardRowIdx, oldBoardColIdx] is the cell to be rotated and is in
+            //     // the array of moves the player has made
+            //     // [newBoardRowIdx, newBoardColIdx] is the new cell in the array of moves
+            //     // of the player
+            //     const newPlayerMoves = playerMoves.map((move) => {
+            //         if (moves[0] === sectionIdx && move[1] === oldRowIdx && move[2] === oldColIdx)
+            //             return [newRowIdx, newColIdx]
+            //         else
+            //             return move.slice()
+            //     })
+            //     if (newPlayerMoves != null)
+            //         newMoves[player] = newPlayerMoves
+            // }
         }))
 
         // creates new board with the new active section
@@ -465,6 +479,7 @@ export default function Board (props) {
         setPick(true)
 
         console.log("rotated section: ", sectionIdx)
+        console.log("new moves", newMoves)
     }
 
     const onRotateCallback = () => {
@@ -478,8 +493,8 @@ export default function Board (props) {
     }
 
     const onModalClickCallback = (sectionIdx) => {
-        console.log("section to rotate", sectionIdx)
-        console.log("rotating section: ", sectionIdx)
+        // console.log("section to rotate", sectionIdx)
+        // console.log("rotating section: ", sectionIdx)
         rotateSection(sectionIdx)
         setModalOpen(false)
         setModalMessage("")
@@ -487,7 +502,6 @@ export default function Board (props) {
     
     const width = calcWidth()
 
-    console.log("moves", moves)
 
     return (
         <Fragment>
