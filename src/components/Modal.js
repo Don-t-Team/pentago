@@ -1,12 +1,26 @@
+import { useState } from "react";
 import { Box, Typography, Grid } from "@mui/material";
 import Modal from "@mui/material/Modal"
 import orange from "@mui/material/colors/orange";
 import grey from "@mui/material/colors/grey"
 
 const CustomModal = (props) => {
-    const {open, message, onModalClickCallback } = props
+    const {open, message : initialMessage, onModalClickCallback } = props
+
+    const [message, setMessage] = useState(initialMessage)
+    const [rotateDirection, setRotateDirection] = useState(null)
+    const [rotateSection, setRotateSection] = useState(null)
+
+    const handleSectionClickCallback = (section) => {
+        setRotateSection(section)
+    }
+
+    const handleDirectionClickCallback = (direction) => {
+        onModalClickCallback(rotateSection, direction)
+    }
 
     const sections = Array(4).fill().map((_, index) => index)
+    const directions = ["Clockwise", "Counter Clockwise"]
     const innerModalBackground = orange[300]
     const modalBackground = grey[400]
     const textBackground = grey[100]
@@ -34,7 +48,7 @@ const CustomModal = (props) => {
             >
                 <Box
                     sx={{
-                        height: "50%",
+                        height: "120px",
                         width: "50%",
                         position: "absolute",
                         backgroundColor: innerModalBackground,
@@ -72,7 +86,8 @@ const CustomModal = (props) => {
                                 sections.map((section, idx) => (
                                     <Grid 
                                         item
-                                        onClick={() => onModalClickCallback(idx)}
+                                        // onClick={() => onModalClickCallback(idx)}
+                                        onClick={() => handleSectionClickCallback(idx)}
                                     >
                                         <Box
                                             sx={{
@@ -91,6 +106,41 @@ const CustomModal = (props) => {
                                     </Grid>
                                 ))
                             }
+                        </Grid>
+
+                        <Grid
+                            container
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-evenly",
+                                alignItems: "center",
+                            }}
+                        >
+                            {
+                                directions.map(direction => (
+                                    <Grid
+                                        item
+                                        onClick={() => handleDirectionClickCallback(direction)}
+                                    >
+                                        <Box
+                                            sx={{
+                                                marginTop: "10px",
+                                                border: "1px solid black",
+                                                borderRadius: "5px",
+                                                width: "200px",
+                                                height: "25px",
+                                                textAlign: "center",
+                                                backgroundColor: textBackground
+                                            }}
+                                        >
+                                            <Typography>
+                                                {direction}
+                                            </Typography>
+                                        </Box>
+                                    </Grid>   
+                                ))
+                                }
                         </Grid>
                     </Grid>
                 </Box>

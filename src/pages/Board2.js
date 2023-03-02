@@ -400,13 +400,13 @@ export default function Board (props) {
             let newColIdx
             let newRowIdx
 
-            if (direction === "clockwise") {
+            if (direction === "Clockwise") {
                 newRowIdx = oldColIdx
                 newColIdx = dim - 1 - oldRowIdx
             }
-            else if (direction === "counter clockwise") {
+            else if (direction === "Counter Clockwise") {
                 newColIdx = oldRowIdx
-                oldRowIdx = dim - 1 - oldColIdx
+                newRowIdx = dim - 1 - oldColIdx
             }
 
             newActiveSection[newRowIdx][newColIdx] = activeSection[oldRowIdx][oldColIdx]
@@ -494,10 +494,10 @@ export default function Board (props) {
         setModalMessage("Select a section to rotate")        
     }
 
-    const onModalClickCallback = (sectionIdx) => {
+    const onModalClickCallback = (sectionIdx, direction) => {
         // console.log("section to rotate", sectionIdx)
         // console.log("rotating section: ", sectionIdx)
-        rotateSection(sectionIdx, "clockwise")
+        rotateSection(sectionIdx, direction)
         setModalOpen(false)
         setModalMessage("")
     }
