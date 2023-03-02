@@ -117,8 +117,6 @@ const doWeHaveAWinner = (moves, player, board) => {
                 curCol = newCol
                 if (rows[newRow] && cols[newCol])
                     count++
-                // else
-                //     break
             }
 
             if (count >= 5)
@@ -135,8 +133,6 @@ const doWeHaveAWinner = (moves, player, board) => {
                 curCol = newCol
                 if (rows[newRow] && cols[newCol])
                     count++
-                // else
-                //     break
             }
 
             if (count >= 5)
@@ -236,10 +232,6 @@ const doWeHaveAWinner = (moves, player, board) => {
             }
         }
 
-        // const processedCheck = (cell) => {
-        //     return processed[cell[0]][cell[1]]
-        // }
-
         const nullCheck = () => {
             return state.some((cell, _) => cell == null)
         }
@@ -255,40 +247,6 @@ const doWeHaveAWinner = (moves, player, board) => {
         return false
     }
 
-    const nullCheck = (state) => {
-        return state.every((cell, _) => cell !== null)
-    }
-
-    const getSuccessors = (state) => {
-        const successors = []
-        for (let i = -1; i <= 1; i++) {
-            if (i === 0) continue;
-                const newStateHorizontal = state.map((cell, _) => cell[0] + i < 0 || cell[0] + i === configAttributes.num_rows
-                    ? null
-                    : [cell[0] + i, cell[1]]
-                ) 
-                const newStateVertical = state.map((cell, _) => cell[1] + i < 0 || cell[1] + i === configAttributes.num_columns
-                    ? null
-                    : [cell[0], cell[1] + i]
-                )  
-                if (nullCheck(newStateHorizontal))
-                    successors.push(newStateHorizontal)
-                if (nullCheck(newStateVertical))
-                    successors.push(newStateVertical)
-        }
-        return successors
-    }
-
-    // const isUniqueState = (state) => {
-    //     const key = state.reduce((sum, cell, cellIdx) => (sum + cell[0] + cell[1]), 0)
-    //     if (uniqueStates[key] == null) {
-    //         uniqueStates[key] = [state]
-    //         return true
-    //     }
-    //     uniqueStates[key].push(state)
-    //     return false
-    // }
-
     const mapStateCellsToBoardCells = (state) => {
         return state.map((cell) => {
             console.log("cell in state", cell)
@@ -298,30 +256,12 @@ const doWeHaveAWinner = (moves, player, board) => {
         })
     } 
 
-
     const state = mapStateCellsToBoardCells(moves)
     if (goalTest(state)) {
         console.log("winning state", state)
         return true
     }
     return false
-    // const frontier = [startState]
-    // const uniqueStates = {}
-
-    // while (frontier.length > 0) {
-    //     const state = frontier.shift()
-    //     if (isUniqueState(state)) {
-    //         if (goalTest(state)) {
-    //             console.log("winning state", state)
-    //             return true
-    //         }
-    //         const successors = getSuccessors(state)
-    //         successors.forEach((successor) => {
-    //                 frontier.push(successor)
-    //         })
-    //     }
-    // }
-    // return false
 }
 
 const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
@@ -349,7 +289,6 @@ export default function Board (props) {
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
     const [activeSectionIdx, setActiveSectionIdx] = useState(null)
-    // const [rotateSectionIdx, setRotateSectionIdx] = useState(null)
     const [pick, setPick] = useState(true)
     const [rotate, setRotate] = useState(false)
     const [modalOpen, setModalOpen] = useState(false)
@@ -357,16 +296,12 @@ export default function Board (props) {
     
     const [moves, setMoves] = useState(createInitialMoves)
 
-    // const [firstAvailableIndex, setFirstAvailableIndex] =
-    //     useState(() => Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
-
     const reset = () => {
         setBoard(createInitialBoard2());
         setMoves(createInitialMoves());
         setHaveAWinner(false);
         setNextColor('blue');
         setPick(true)
-        // setFirstAvailableIndex(Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
     };
 
     const getCurrentPlayer = () => (
@@ -381,8 +316,7 @@ export default function Board (props) {
         if (!pick) {
             return;
         }
-        
-        // const [row, col] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
+
         const activeSectionIdx = sectionIdx
 
         if (board[activeSectionIdx][rowIdx][colIdx].isOccupied)
@@ -395,12 +329,6 @@ export default function Board (props) {
         newBoard[activeSectionIdx][rowIdx][colIdx]["color"] = nextColor
         newBoard[activeSectionIdx][rowIdx][colIdx]["isOccupied"] = true
         newMoves[currentPlayer].push([sectionIdx, rowIdx, colIdx])
-
-        // if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, newBoard)) {
-        //     setHaveAWinner(true)
-        //     setMoves(createInitialMoves)
-        //     setWinnerColor(nextColor);
-        // }
         
         setActiveSectionIdx(activeSectionIdx)
         setBoard(newBoard)
@@ -430,7 +358,7 @@ export default function Board (props) {
         (num_rows - 1) * configAttributes.h_gap + marginBottom
     }
 
-    const rotateSection = (sectionIdx) => {
+    const rotateSection = (sectionIdx, direction) => {
 
         console.log("rotating section", sectionIdx)
 
@@ -466,13 +394,21 @@ export default function Board (props) {
 
          // rotate section 90 degrees clockwise
         activeCellsIdx.forEach((row, rowIdx) => row.forEach((colIdx, _) => {
+            const dim = configAttributes.num_rows / 2
             let oldRowIdx = rowIdx
             let oldColIdx = colIdx
             let newColIdx
-            let newRowIdx = oldColIdx
-            if (oldRowIdx === 0) newColIdx = 2
-            if (oldRowIdx === 1) newColIdx = 1
-            if (oldRowIdx === 2) newColIdx = 0
+            let newRowIdx
+
+            if (direction === "clockwise") {
+                newRowIdx = oldColIdx
+                newColIdx = dim - 1 - oldRowIdx
+            }
+            else if (direction === "counter clockwise") {
+                newColIdx = oldRowIdx
+                oldRowIdx = dim - 1 - oldColIdx
+            }
+
             newActiveSection[newRowIdx][newColIdx] = activeSection[oldRowIdx][oldColIdx]
 
             const newBlueMoveIdx = blueMovesToRotate[[sectionIdx, oldRowIdx, oldColIdx]]
@@ -561,7 +497,7 @@ export default function Board (props) {
     const onModalClickCallback = (sectionIdx) => {
         // console.log("section to rotate", sectionIdx)
         // console.log("rotating section: ", sectionIdx)
-        rotateSection(sectionIdx)
+        rotateSection(sectionIdx, "clockwise")
         setModalOpen(false)
         setModalMessage("")
     }
