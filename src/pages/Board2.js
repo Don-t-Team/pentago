@@ -340,25 +340,21 @@ export default function Board (props) {
             return
 
         const newBoard = board.slice()
+        const newMoves = moves.slice()
+        const currentPlayer = getCurrentPlayer()
         
-        const newColor = advanceColor(nextColor)
         newBoard[activeSectionIdx][rowIdx][colIdx]["color"] = nextColor
         newBoard[activeSectionIdx][rowIdx][colIdx]["isOccupied"] = true
-        
-        const currentPlayer = getCurrentPlayer()
-        const newMoves = moves.slice()
-
         newMoves[currentPlayer].push([sectionIdx, rowIdx, colIdx])
 
-        if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, newBoard)) {
-            setHaveAWinner(true)
-            setMoves(createInitialMoves)
-            setWinnerColor(nextColor);
-        }
+        // if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, newBoard)) {
+        //     setHaveAWinner(true)
+        //     setMoves(createInitialMoves)
+        //     setWinnerColor(nextColor);
+        // }
         
         setActiveSectionIdx(activeSectionIdx)
         setBoard(newBoard)
-        setNextColor(newColor)
         setMoves(newMoves)
         setPick(false)
         setRotate(true)
@@ -387,9 +383,11 @@ export default function Board (props) {
 
     const rotateSection = (sectionIdx) => {
 
-        const rotatingSectionIdx = sectionIdx
+        console.log("rotating section", sectionIdx)
+
         const activeSection = board[sectionIdx].slice()
         const newMoves = moves.slice()
+        const newColor = advanceColor(nextColor)
         
         // get index array of all cells in the active section
         const activeCellsIdx = activeSection.map((row) => row.map((_, cellIdx) => cellIdx))
@@ -400,6 +398,22 @@ export default function Board (props) {
             newCell['color'] = 'white'
             return newCell
         }))
+
+        // keys are the moves in the state of blue player's moves
+        const blueMovesToRotate = Object.fromEntries(newMoves[0].map((move, index) => {
+            if (move[0] === sectionIdx) {
+                return [[...move], index]
+            }
+            return undefined
+        }).filter((move) => move != undefined))
+
+        // keys are the moves in the state of red player's moves
+        const redMovesToRotate = Object.fromEntries(newMoves[1].map((move, index) => {
+            if (move[0] === sectionIdx) {
+                return [[...move], index]
+            }
+            return undefined
+        }).filter((move) => move != undefined))
 
          // rotate section 90 degrees clockwise
         activeCellsIdx.forEach((row, rowIdx) => row.forEach((colIdx, _) => {
@@ -412,30 +426,50 @@ export default function Board (props) {
             if (oldRowIdx === 2) newColIdx = 0
             newActiveSection[newRowIdx][newColIdx] = activeSection[oldRowIdx][oldColIdx]
 
-            const blueMoves = Object.fromEntries(newMoves[0].map((move, index) => [move[0], [move[1], move[2], index]]))
-            const redMoves = Object.fromEntries(newMoves[1].map((move, index) => [move[0], [move[1], move[2], index]]))
+            const newBlueMoveIdx = blueMovesToRotate[[sectionIdx, oldRowIdx, oldColIdx]]
+            const newRedMoveIdx = redMovesToRotate[[sectionIdx, oldRowIdx, oldColIdx]]
 
-            const cellColor = board[sectionIdx][oldRowIdx][oldColIdx]["color"]
-            if (cellColor === "blue") {
-                const blueMove = blueMoves[sectionIdx]
-                const blueMoveRowIdx = blueMove[0]
-                const blueMoveColIdx = blueMove[1] 
-
-                if (blueMoveRowIdx === oldRowIdx && blueMoveColIdx === oldColIdx) {
-                    var cellIdx = blueMove[2]
-                    newMoves[0][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
-                    console.log("old blue move", )
-                }
+            if (newBlueMoveIdx != null) {
+                newMoves[0][newBlueMoveIdx] = [sectionIdx, newRowIdx, newColIdx]
+                console.log("old blue move", [sectionIdx, oldRowIdx, oldColIdx])
+                console.log("new blue move", [sectionIdx, newRowIdx, newColIdx])
             }
-            else if (cellColor === "red" && redMoves[sectionIdx]) {
-                const redMove = redMoves[sectionIdx]
-                const redMoveRowIdx = redMove[0]
-                const redMoveColIdx = redMove[1]
-
-                if (redMoveRowIdx === oldRowIdx && redMoveColIdx === oldColIdx)
-
-                newMoves[1][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
+            if (newRedMoveIdx != null) {
+                newMoves[1][newRedMoveIdx] = [sectionIdx, newRowIdx, newColIdx]
+                console.log("old red move", [sectionIdx, oldRowIdx, oldColIdx])
+                console.log("new red move", [sectionIdx, newRowIdx, newColIdx])                
             }
+
+            // const blueMoves = Object.fromEntries(newMoves[0].map((move, index) => [move[0], [move[1], move[2], index]]))
+            // const redMoves = Object.fromEntries(newMoves[1].map((move, index) => [move[0], [move[1], move[2], index]]))
+
+            // const cellColor = board[sectionIdx][oldRowIdx][oldColIdx]["color"]
+            // if (cellColor === "blue") {
+            //     const blueMove = blueMoves[sectionIdx]
+            //     const blueMoveRowIdx = blueMove[0]
+            //     const blueMoveColIdx = blueMove[1] 
+
+            //     if (blueMoveRowIdx === oldRowIdx && blueMoveColIdx === oldColIdx) {
+            //         var cellIdx = blueMove[2]
+            //         newMoves[0][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
+            //         console.log("old blue move", [sectionIdx, oldRowIdx, oldColIdx])
+            //         console.log("new blue move", [sectionIdx, newRowIdx, newColIdx])
+            //     }
+            // }
+            // else if (cellColor === "red" && redMoves[sectionIdx]) {
+            //     const redMove = redMoves[sectionIdx]
+            //     const redMoveRowIdx = redMove[0]
+            //     const redMoveColIdx = redMove[1]
+
+            //     if (redMoveRowIdx === oldRowIdx && redMoveColIdx === oldColIdx) {
+            //         var cellIdx = redMove[2]
+            //         newMoves[1][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
+            //         console.log("old red move", [sectionIdx, oldRowIdx, oldColIdx])
+            //         console.log("new red move", [sectionIdx, newRowIdx, newColIdx])
+            //     }
+
+            //     newMoves[1][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
+            // }
         }))
 
         // creates new board with the new active section
@@ -450,17 +484,19 @@ export default function Board (props) {
         const currentPlayer = getCurrentPlayer()
         const currentPlayerMoves = newMoves[currentPlayer].slice()
 
-        if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, newBoard))
+        if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, newBoard)) {
             setHaveAWinner(true)
             setWinnerColor(nextColor)
+        }
 
         setBoard(newBoard)
         setMoves(newMoves)
+        setNextColor(newColor)
         setRotate(false)
         setPick(true)
 
-        console.log("rotated section: ", sectionIdx)
-        console.log("new moves", newMoves)
+        // console.log("rotated section: ", sectionIdx)
+        // console.log("new moves", newMoves)
     }
 
     const onRotateCallback = () => {
