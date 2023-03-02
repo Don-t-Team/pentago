@@ -41,9 +41,13 @@ const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
 //     return newBoard
 // }
 
+const createInitialCell = () => (
+    { color: "white", isOccupied: false }
+)
+
 const createInitialBoard2 = () => {
     const createInitalSection = (sectionIdx) => {
-        const section = Array(configAttributes.num_rows / 2).fill(Array(configAttributes.num_columns / 2).fill({ color: "white", isOccupied: false }))
+        const section = Array(configAttributes.num_rows / 2).fill(Array(configAttributes.num_columns / 2).fill(createInitialCell()))
         const initialSection = section.map((row, rowIdx) => row.map((col, colIdx) => {
             return {...section[rowIdx][colIdx], section: sectionIdx, row: rowIdx, column: colIdx}
         }))
@@ -141,19 +145,57 @@ const doWeHaveAWinner = (moves, player, board) => {
             return false
         }
 
-        const horizontalCheck = (mostOccCol, occurrences) => {
+        // a helper function for vertical and horizontal goal checks
+        const winConditionCheck = (winCondition, mostOccRowOrCol, direction) => {
+            const win = state.reduce((connected, curCell) => {
+                const [curCellRow, curCellCol] = curCell
+                const rowOrColToCheck = direction === "horizontal" ? curCellRow : curCellCol
+                const rowOrColToSlide = direction === "horizontal" ? curCellCol : curCellRow
+                if (rowOrColToCheck === mostOccRowOrCol && winCondition[rowOrColToSlide] != null) {
+                    delete winCondition[rowOrColToSlide]
+                    return [...connected, curCell.slice()]
+                }
+                return connected
+            }, []) 
+
+            return Object.keys(winCondition).length === 0
+        }
+
+        const verticalCheck = (mostOccCol, occurrences) => {
             if (occurrences < 5) {
                 return false
             }
-            const res = state.filter((curCell, _) => (curCell[1] === mostOccCol))
-            return res.length >= configAttributes.num_columns - 1
+
+            // a list of horizontal index from 0 to 5
+            const conditionOne = Object.fromEntries(Array(5).fill().map((_, index) => [index, index]))
+            // a list of horizontal index from 1 to 6
+            const conditionTwo = Object.fromEntries(Array(5).fill().map((_, index) => [index + 1, index + 1]))
+
+            const winsInConditionOne = winConditionCheck(conditionOne, mostOccCol, "vertical")
+            if (winsInConditionOne)
+                return true
+
+            const winsInConditionTwo = winConditionCheck(conditionTwo, mostOccCol, "vertical")
+            return winsInConditionTwo
         }
 
-        const verticalCheck = (mostOccRow, occurrences) => (
-            occurrences < 5
-                ? false
-                : state.filter((curCell, _) => (curCell[0] === mostOccRow)).length >= configAttributes.num_rows - 1
-        )
+        const horizontalCheck = (mostOccRow, occurrences) => {
+            if (occurrences < 5) {
+                return false
+            }
+
+            // a list of vertical index from 0 to 5
+            const conditionOne = Object.fromEntries(Array(5).fill().map((_, index) => [index, index]))
+            // a list of vertical index from 1 to 6
+            const conditionTwo = Object.fromEntries(Array(5).fill().map((_, index) => [index + 1, index + 1]))
+
+            const winsInConditionOne = winConditionCheck(conditionOne, mostOccRow, "horizontal")
+            if (winsInConditionOne)
+                return true
+
+            const winsInConditionTwo = winConditionCheck(conditionTwo, mostOccRow, "horizontal")
+            return winsInConditionTwo
+        }
 
         const mostOccIndex = () => {
             // Finds the cell with the most occurrences in a state
@@ -184,6 +226,7 @@ const doWeHaveAWinner = (moves, player, board) => {
                     : occCols[cell[1]]++
             })
 
+            // need to check for multiple most occurred rows and columns
             const [mostOccRow, occRow] = find(occRows)
             const [mostOccCol, occCol] = find(occCols)
 
@@ -206,7 +249,7 @@ const doWeHaveAWinner = (moves, player, board) => {
 
         const { mostOccRow, occRow, mostOccCol, occCol } = mostOccIndex()
 
-        if (horizontalCheck(mostOccCol, occCol) || verticalCheck(mostOccRow, occRow) || diagonalCheck())
+        if (verticalCheck(mostOccCol, occCol) || horizontalCheck(mostOccRow, occRow) || diagonalCheck())
             return true
 
         return false
@@ -236,15 +279,15 @@ const doWeHaveAWinner = (moves, player, board) => {
         return successors
     }
 
-    const isUniqueState = (state) => {
-        const key = state.reduce((sum, cell, cellIdx) => (sum + cell[0] + cell[1]), 0)
-        if (uniqueStates[key] == null) {
-            uniqueStates[key] = [state]
-            return true
-        }
-        uniqueStates[key].push(state)
-        return false
-    }
+    // const isUniqueState = (state) => {
+    //     const key = state.reduce((sum, cell, cellIdx) => (sum + cell[0] + cell[1]), 0)
+    //     if (uniqueStates[key] == null) {
+    //         uniqueStates[key] = [state]
+    //         return true
+    //     }
+    //     uniqueStates[key].push(state)
+    //     return false
+    // }
 
     const mapStateCellsToBoardCells = (state) => {
         return state.map((cell) => {
@@ -256,24 +299,29 @@ const doWeHaveAWinner = (moves, player, board) => {
     } 
 
 
-    const startState = mapStateCellsToBoardCells(moves)
-    const frontier = [startState]
-    const uniqueStates = {}
-
-    while (frontier.length > 0) {
-        const state = frontier.shift()
-        if (isUniqueState(state)) {
-            if (goalTest(state)) {
-                console.log("winning state", state)
-                return true
-            }
-            const successors = getSuccessors(state)
-            successors.forEach((successor) => {
-                    frontier.push(successor)
-            })
-        }
+    const state = mapStateCellsToBoardCells(moves)
+    if (goalTest(state)) {
+        console.log("winning state", state)
+        return true
     }
     return false
+    // const frontier = [startState]
+    // const uniqueStates = {}
+
+    // while (frontier.length > 0) {
+    //     const state = frontier.shift()
+    //     if (isUniqueState(state)) {
+    //         if (goalTest(state)) {
+    //             console.log("winning state", state)
+    //             return true
+    //         }
+    //         const successors = getSuccessors(state)
+    //         successors.forEach((successor) => {
+    //                 frontier.push(successor)
+    //         })
+    //     }
+    // }
+    // return false
 }
 
 const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
