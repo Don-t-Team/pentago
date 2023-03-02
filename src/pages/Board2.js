@@ -104,7 +104,8 @@ const doWeHaveAWinner = (moves, player, board) => {
             let start = state[0]
             let curRow = rows[start[0]]
             let curCol = cols[start[0]]
-            let count = 0
+            // counting the start cell itself 
+            let count = 1
             while (rows[curRow] != null && cols[curCol] != null) {
                 const newRow = curRow + 1
                 const newCol = curCol + 1
@@ -112,8 +113,8 @@ const doWeHaveAWinner = (moves, player, board) => {
                 curCol = newCol
                 if (rows[newRow] && cols[newCol])
                     count++
-                else
-                    break
+                // else
+                //     break
             }
 
             if (count >= 5)
@@ -130,8 +131,8 @@ const doWeHaveAWinner = (moves, player, board) => {
                 curCol = newCol
                 if (rows[newRow] && cols[newCol])
                     count++
-                else
-                    break
+                // else
+                //     break
             }
 
             if (count >= 5)
