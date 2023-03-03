@@ -9,41 +9,19 @@ import Controls from "./Controls"
 import configAttributes from "../config/attributes"
 import Modal from '../components/Modal';
 
-const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
-
-// const createInitialBoard = () => {
-//     const board = Array(configAttributes.num_rows).fill(Array(configAttributes.num_columns).fill({color: "white", isOccupied: false}));
-//     const initialBoard = board.map((row, rowIdx) => row.map( (col, colIdx) => {
-//         const sectionIdx = getSectionIndex(rowIdx, colIdx)
-//         return {...board[rowIdx][colIdx], section: sectionIdx, row: rowIdx, column: colIdx }
-//     }));
-//     return initialBoard
-// }
-
-// const renderBoard = (board) => {
-//     const getTopOrBottomSection = (start, end) => {
-//         return board.slice(start, end)
-//     }
-
-//     const divideTopOrBottomSection = (section, startFirst, endFirst, startSecond, endSecond) => {
-//         const first = section.map((row, _) => row.slice(startFirst, endFirst))
-//         const second = section.map((row, _) => row.slice(startSecond, endSecond))
-//         return [[...first], [...second]]
-//     }
-
-//     const topSection = getTopOrBottomSection(0, configAttributes.num_rows / 2)
-//     const bottomSection = getTopOrBottomSection(configAttributes.num_rows / 2, configAttributes.num_rows)
-//     const [topLeftSection, topRightSection] = divideTopOrBottomSection(topSection, 0, configAttributes.num_columns / 2, configAttributes.num_columns / 2, configAttributes.num_columns)
-//     const [bottomLeftSection, bottomRightSection] = divideTopOrBottomSection(bottomSection, 0, configAttributes.num_columns / 2, configAttributes.num_columns / 2, configAttributes.num_columns)
-
-//     const newBoard = [[...topLeftSection], [...topRightSection], [...bottomLeftSection], [...bottomRightSection]]
-
-//     return newBoard
-// }
+const changeColor = color =>  color === 'red' ? 'blue' : 'red';
 
 const createInitialCell = () => (
     { color: "white", isOccupied: false }
 )
+
+const advanceState = (curState) => {
+    return (curState + 1) % 2
+}
+
+const rollbackState = (curState) => {
+    return (curState - 1) < 0 ? 1 : curState - 1
+}
 
 const createInitialBoard2 = () => {
     const createInitalSection = (sectionIdx) => {
@@ -289,19 +267,22 @@ export default function Board (props) {
     const [nextColor, setNextColor] = useState('blue');
     const [winnerColor, setWinnerColor] = useState(undefined);
     const [activeSectionIdx, setActiveSectionIdx] = useState(null)
-    const [pick, setPick] = useState(true)
-    const [rotate, setRotate] = useState(false)
+    const [moves, setMoves] = useState(createInitialMoves)
+    const [lastRotateDirection, setLastRotateDirection] = useState(null)
+    const [lastRotateSectionIdx, setLastRotateSectionIdx] = useState(null)
+
+    const [states, setStates] = useState(["click", "rotate"])
+    const [curState, setCurState] = useState(0)
+    const [showUndoButton, setShowUndoButton] = useState(false)
     const [modalOpen, setModalOpen] = useState(false)
     const [modalMessage, setModalMessage] = useState("")
-    
-    const [moves, setMoves] = useState(createInitialMoves)
 
     const reset = () => {
         setBoard(createInitialBoard2());
         setMoves(createInitialMoves());
         setHaveAWinner(false);
         setNextColor('blue');
-        setPick(true)
+        setCurState(0)
     };
 
     const getCurrentPlayer = () => (
@@ -313,7 +294,7 @@ export default function Board (props) {
             return;
         }
 
-        if (!pick) {
+        if (states[curState] !== 'click') {
             return;
         }
 
@@ -325,6 +306,7 @@ export default function Board (props) {
         const newBoard = board.slice()
         const newMoves = moves.slice()
         const currentPlayer = getCurrentPlayer()
+        const newState = advanceState(curState)
         
         newBoard[activeSectionIdx][rowIdx][colIdx]["color"] = nextColor
         newBoard[activeSectionIdx][rowIdx][colIdx]["isOccupied"] = true
@@ -333,8 +315,8 @@ export default function Board (props) {
         setActiveSectionIdx(activeSectionIdx)
         setBoard(newBoard)
         setMoves(newMoves)
-        setPick(false)
-        setRotate(true)
+        setCurState(newState)
+        setShowUndoButton(true)
     }
 
     const calcWidth = () => { 
@@ -364,7 +346,6 @@ export default function Board (props) {
 
         const activeSection = board[sectionIdx].slice()
         const newMoves = moves.slice()
-        const newColor = advanceColor(nextColor)
         
         // get index array of all cells in the active section
         const activeCellsIdx = activeSection.map((row) => row.map((_, cellIdx) => cellIdx))
@@ -424,49 +405,13 @@ export default function Board (props) {
                 console.log("old red move", [sectionIdx, oldRowIdx, oldColIdx])
                 console.log("new red move", [sectionIdx, newRowIdx, newColIdx])                
             }
-
-            // const blueMoves = Object.fromEntries(newMoves[0].map((move, index) => [move[0], [move[1], move[2], index]]))
-            // const redMoves = Object.fromEntries(newMoves[1].map((move, index) => [move[0], [move[1], move[2], index]]))
-
-            // const cellColor = board[sectionIdx][oldRowIdx][oldColIdx]["color"]
-            // if (cellColor === "blue") {
-            //     const blueMove = blueMoves[sectionIdx]
-            //     const blueMoveRowIdx = blueMove[0]
-            //     const blueMoveColIdx = blueMove[1] 
-
-            //     if (blueMoveRowIdx === oldRowIdx && blueMoveColIdx === oldColIdx) {
-            //         var cellIdx = blueMove[2]
-            //         newMoves[0][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
-            //         console.log("old blue move", [sectionIdx, oldRowIdx, oldColIdx])
-            //         console.log("new blue move", [sectionIdx, newRowIdx, newColIdx])
-            //     }
-            // }
-            // else if (cellColor === "red" && redMoves[sectionIdx]) {
-            //     const redMove = redMoves[sectionIdx]
-            //     const redMoveRowIdx = redMove[0]
-            //     const redMoveColIdx = redMove[1]
-
-            //     if (redMoveRowIdx === oldRowIdx && redMoveColIdx === oldColIdx) {
-            //         var cellIdx = redMove[2]
-            //         newMoves[1][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
-            //         console.log("old red move", [sectionIdx, oldRowIdx, oldColIdx])
-            //         console.log("new red move", [sectionIdx, newRowIdx, newColIdx])
-            //     }
-
-            //     newMoves[1][cellIdx] = [sectionIdx, newRowIdx, newColIdx]
-            // }
         }))
 
-        // creates new board with the new active section
-        // const newBoard = board.slice()
-        // newActiveSection.forEach((row, rowIdx) => row.forEach((cell, colIdx) => {
-        //     const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
-        //     newBoard[sectionIdx][boardRowIdx][boardColIdx] = cell
-        // }))
         const newBoard = board.slice()
-        newBoard[sectionIdx] = newActiveSection
-
         const currentPlayer = getCurrentPlayer()
+        const newState = advanceState(curState)
+
+        newBoard[sectionIdx] = newActiveSection
         const currentPlayerMoves = newMoves[currentPlayer].slice()
 
         if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, newBoard)) {
@@ -476,34 +421,80 @@ export default function Board (props) {
 
         setBoard(newBoard)
         setMoves(newMoves)
-        setNextColor(newColor)
-        setRotate(false)
-        setPick(true)
-
+        setCurState(newState)
+        setShowUndoButton(true)
+        setLastRotateSectionIdx(sectionIdx)
+        setLastRotateDirection(direction)
         // console.log("rotated section: ", sectionIdx)
         // console.log("new moves", newMoves)
     }
 
+    const undoClick = () => {
+        const currentPlayer = getCurrentPlayer()
+        const prevMoves = moves.slice()
+        const prevState = rollbackState(curState)
+        const [lastSectionIdx, lastRowIdx, lastColIdx] = prevMoves[currentPlayer].pop()
+        const prevBoard = board.map((section, sectionIdx) => section.map((row, rowIdx) => row.map((cell, colIdx) => {
+            if (sectionIdx === lastSectionIdx && rowIdx === lastRowIdx && colIdx === lastColIdx) {
+                const newCell = {...cell}
+                newCell["color"] = "white"
+                newCell["isOccupied"] = false
+                return newCell
+            }
+            return {...cell}
+        })))
+        setBoard(prevBoard)
+        setMoves(prevMoves)
+        setCurState(prevState)
+        setShowUndoButton(false)    
+    }
+
+    const undoRotate = () => {
+        if (lastRotateDirection === "Clockwise") {
+            rotateSection(lastRotateSectionIdx, "Counter Clockwise")
+        }
+        else if (lastRotateDirection === "Counter Clockwise") {
+            rotateSection(lastRotateSectionIdx, "Clockwise")
+        }
+    }
+
+    
+    const onUndoCallback = () => {
+        const prevState = rollbackState(curState)
+        if (states[prevState] === "click") {
+            undoClick()
+            const prevState = rollbackState(curState)
+            setCurState(prevState)
+        }
+        else if (states[prevState] === "rotate") {
+            // Because a change of player color happens after a rotation,
+            // undoing a rotation requires an change of player color to the
+            // previous state
+            const newColor = changeColor(nextColor)
+            setNextColor(newColor)
+            // don't need to roll back state because a rotation moves to the next state
+            // which is also the previous state
+            undoRotate()
+        }
+    }
+    
     const onRotateCallback = () => {
-        if (!rotate) {
+        if (states[curState] !== 'rotate') {
             return;
         }
-        // prevents picking a new cell by setting rotate to false
-        setRotate(true)
         setModalOpen(true)
-        setModalMessage("Select a section to rotate")        
+        setModalMessage("Select a section to rotate")      
     }
 
     const onModalClickCallback = (sectionIdx, direction) => {
-        // console.log("section to rotate", sectionIdx)
-        // console.log("rotating section: ", sectionIdx)
         rotateSection(sectionIdx, direction)
+        const newColor = changeColor(nextColor)
+        setNextColor(newColor)
         setModalOpen(false)
         setModalMessage("")
     }
     
     const width = calcWidth()
-
 
     return (
         <Fragment>
@@ -513,6 +504,7 @@ export default function Board (props) {
                 <TopMessage nextColor={nextColor}
                             winnerColor={winnerColor}
                             haveAWinner={haveAWinner}
+                            curState={states[curState]}
                             reset={reset} />
                 {
                     <Grid 
@@ -540,7 +532,7 @@ export default function Board (props) {
                         }
                     </Grid>
                 }
-                <Controls onRotateCallback={onRotateCallback}/>
+                <Controls onRotateCallback={onRotateCallback} showUndoButton={showUndoButton} onUndoCallback={onUndoCallback}/>
                 <Modal open={modalOpen} message={modalMessage} onModalClickCallback={onModalClickCallback}/>
             </Stack>
         </Fragment>
