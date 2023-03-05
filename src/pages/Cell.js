@@ -15,7 +15,9 @@ const Cell = (props) => {
                 borderRadius: '50%',
                 display: 'flex',
                 flexDirection: 'row',
-                mb: 0.5,
+                justifyContent: 'center',
+                alignItems: 'center',
+                // mb: 0.5,
             }}
         />
     );

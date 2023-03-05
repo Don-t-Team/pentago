@@ -19,7 +19,7 @@ const Row = props => {
                   display: 'flex',
                   flexDirection: 'row',
                   justifyContent: "center",
-                  mb: 0.5,
+                //   mb: 0.5,
                   height: configAttributes.cell_height
               }}
         >
@@ -34,7 +34,7 @@ const Row = props => {
                             display: 'flex',
                             flexDirection: 'row',
                             justifyContent: 'center',
-                            mb: 0.5,
+                            // mb: 0.5,
                         }}
                     >
                         <Cell cell={cell}

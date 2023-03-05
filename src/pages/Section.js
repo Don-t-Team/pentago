@@ -13,7 +13,8 @@ const Section = props => {
         ? configAttributes.s_gap
         : 0
         
-    const sectionHeight = height - marginBottom
+    // const sectionHeight = height - marginBottom
+    const sectionHeight = height
     marginBottom += 'px'
 
     // console.log("section height", sectionHeight)
@@ -21,7 +22,7 @@ const Section = props => {
 
     return (
         <Grid 
-            data_class={"section"}
+            data_class={"section-container"}
             container
             item
             sx={{
@@ -29,10 +30,22 @@ const Section = props => {
                 flexDirection: 'row',
                 width: width,
                 height: sectionHeight,
-                marginBottom: marginBottom
             }}
             xs={6}
         >
+            <Grid
+                data_class={'section'}
+                container
+                sx={{
+                    border: "1px solid black",
+                    borderRadius: "15px",
+                    padding: "5px",
+                    margin: "5px",
+                    display: "inherit",
+                    justifyContent: 'center',
+                    alignItems: "center"
+                }}
+            >
             {
                 section.map((row, idx) => (
                     <Row 
@@ -46,6 +59,7 @@ const Section = props => {
                     />
                 ))
             }
+            </Grid>
         </Grid>
     )
 }

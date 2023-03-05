@@ -325,19 +325,28 @@ export default function Board (props) {
         configAttributes.s_gap
     }
 
+    const calcBoardHeight = () => {
+        return configAttributes.num_columns * configAttributes.cell_width +
+        (configAttributes.num_columns - 1) * configAttributes.h_gap + 
+        configAttributes.s_gap
+    }
+
     
     const calcSectionWidth = (sectionIdx) => {
         const num_cols = configAttributes.num_columns / 2
-        const marginRight = sectionIdx % 2 === 0 ? configAttributes.s_gap : 0
+        // const marginRight = sectionIdx % 2 === 0 ? configAttributes.s_gap : 0
+        const marginRight = configAttributes.s_gap
         return num_cols * configAttributes.cell_width +
         (num_cols - 1) * configAttributes.h_gap + marginRight
     }
     
     const calcSectionHeight = (sectionIdx) => {
         const num_rows = configAttributes.num_rows / 2
-        const marginBottom = sectionIdx < configAttributes.num_sections / 2 ? configAttributes.s_gap : 0
+        // const marginBottom = sectionIdx < configAttributes.num_sections / 2 ? configAttributes.s_gap : 0
+        const marginBottom = configAttributes.s_gap
         return num_rows * configAttributes.cell_height +
         (num_rows - 1) * configAttributes.h_gap + marginBottom
+        // (num_rows - 1) * configAttributes.h_gap
     }
 
     const rotateSection = (sectionIdx, direction) => {
@@ -458,7 +467,6 @@ export default function Board (props) {
         }
     }
 
-    
     const onUndoCallback = () => {
         const prevState = rollbackState(curState)
         if (states[prevState] === "click") {
@@ -495,6 +503,7 @@ export default function Board (props) {
     }
     
     const width = calcWidth()
+    const boardHeight = calcBoardHeight()
 
     return (
         <Fragment>
@@ -512,6 +521,7 @@ export default function Board (props) {
                         container 
                         columns={configAttributes.num_columns}                
                         sx={{
+                            height: boardHeight,
                             display: 'flex',
                             flexDirection: 'row',
                             mb: 0.5,
