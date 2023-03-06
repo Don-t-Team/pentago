@@ -1,24 +1,20 @@
 import Grid from "@mui/material/Grid";
+import configAttributes from "../config/attributes";
 import Row from "./Row";
 
-import configAttributes from "../config/attributes";
-import { margin } from "@mui/system";
+const calcRowHeight = () => ( configAttributes.cell_height )
 
 const Section = props => {
     const {onClickCallback, sectionIdx, section, width, height} = props;
 
-    // console.log("section index", index, "section width", width, "section height", height)
-
-    let marginBottom = sectionIdx <= configAttributes.num_sections / 2
-        ? configAttributes.s_gap
-        : 0
+   const { baseWidth, marginRight } = width
+   const { baseHeight, marginBottom } = height
         
-    // const sectionHeight = height - marginBottom
-    const sectionHeight = height
-    marginBottom += 'px'
+    const sectionWidth = baseWidth
+    const sectionHeight = baseHeight
 
-    // console.log("section height", sectionHeight)
-    // console.log("margin bottom", marginBottom)
+    console.log("section", sectionIdx, "section height", sectionHeight + marginBottom)
+    console.log("section", sectionIdx, "section width", sectionWidth + marginRight)
 
     return (
         <Grid 
@@ -26,31 +22,37 @@ const Section = props => {
             container
             item
             sx={{
+                border: "1px solid black",
+                borderRadius: "15px",
                 display: 'flex',
                 flexDirection: 'row',
-                width: width,
-                height: sectionHeight,
+                width: sectionWidth + 'px',
+                height: sectionHeight + 'px',
+                mr: marginRight + 'px',
+                padding: "3.5px"
+                // mb: marginBottom + 'px'
+                // marginRight: marginRight,
+                // marginBottom: marginBottom
             }}
-            xs={6}
         >
-            <Grid
+            {/* <Grid
                 data_class={'section'}
                 container
                 sx={{
                     border: "1px solid black",
                     borderRadius: "15px",
-                    padding: "5px",
-                    margin: "5px",
+                    // padding: "1px",
+                    // margin: "5px",
                     display: "inherit",
                     justifyContent: 'center',
                     alignItems: "center"
                 }}
-            >
+            > */}
             {
                 section.map((row, idx) => (
                     <Row 
-                        width={width}
-                        height={height}
+                        width={sectionWidth}
+                        height={calcRowHeight()}
                         key={idx}
                         sectionIdx={sectionIdx}
                         row={row}
@@ -59,7 +61,7 @@ const Section = props => {
                     />
                 ))
             }
-            </Grid>
+            {/* </Grid> */}
         </Grid>
     )
 }

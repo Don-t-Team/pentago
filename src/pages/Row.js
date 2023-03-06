@@ -4,7 +4,7 @@ import Cell from "./Cell"
 import configAttributes from "../config/attributes"
 
 const Row = props => {
-    const {onClickCallback, row, rowIdx, sectionIdx} = props;
+    const {onClickCallback, row, rowIdx, sectionIdx, width} = props;
 
     // console.log("row", row)
 
@@ -13,13 +13,13 @@ const Row = props => {
               data_class={"row"}
               row="true"
               container 
-              width={"100%"}
               columns={configAttributes.num_columns / 2}
+            //   columnGap={1}
               sx={{
                   display: 'flex',
                   flexDirection: 'row',
                   justifyContent: "center",
-                //   mb: 0.5,
+                  width: width,
                   height: configAttributes.cell_height
               }}
         >

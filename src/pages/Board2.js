@@ -319,35 +319,89 @@ export default function Board (props) {
         setShowUndoButton(true)
     }
 
-    const calcWidth = () => { 
-        return configAttributes.num_columns * configAttributes.cell_width +
-        (configAttributes.num_columns - 1) * configAttributes.h_gap + 
-        configAttributes.s_gap
+    // const calcBoardWidth = (sectionWidths) => { 
+    //     // return configAttributes.num_columns * configAttributes.cell_width +
+    //     // (configAttributes.num_columns - 1) * configAttributes.h_gap + 
+    //     // configAttributes.s_gap + 1
+
+    //     const getHalfWidth = (half) => (
+    //         half.width + half.marginRight
+    //     )
+
+    //     const left = getHalfWidth(sectionWidths[0])
+    //     const right =  getHalfWidth(sectionWidths[1])
+
+    //     return left + right + 2
+    // }
+
+    // const calcBoardHeight = (sectionHeights) => {
+    //     // return configAttributes.num_columns * configAttributes.cell_width +
+    //     // (configAttributes.num_columns - 1) * configAttributes.h_gap + 
+    //     // configAttributes.s_gap + 1
+
+    //     const getHalfHeight = (half) => (
+    //         half.height + half.marginBottom
+    //     )
+
+    //     const top = getHalfHeight(sectionHeights[0])
+    //     const bottom = getHalfHeight(sectionHeights[2])
+
+    //     return top + bottom + 2
+    // }
+
+    const calcBoardHeight2 = () => {
+        const cellBorder = configAttributes.cell_border_width * 2
+        const cellHeight = configAttributes.cell_height + cellBorder
+        const heightGap = configAttributes.h_gap
+        const numRows = configAttributes.num_rows
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        return numRows * cellHeight + (numRows - 1) * heightGap + sectionBorder + sectionGap
+
     }
 
-    const calcBoardHeight = () => {
-        return configAttributes.num_columns * configAttributes.cell_width +
-        (configAttributes.num_columns - 1) * configAttributes.h_gap + 
-        configAttributes.s_gap
+    const calcBoardWidth2 = () => {
+        const cellBorder = configAttributes.cell_border_width * 2
+        const cellWidth = configAttributes.cell_width + cellBorder
+        const widthGap = configAttributes.h_gap
+        const numCols = configAttributes.num_columns
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        return numCols * cellWidth + (numCols - 1) * widthGap + sectionBorder + sectionGap
+    }
+
+    const calcSectionWidth2 = (boardWidth, sectionIdx) => {
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        if (sectionIdx % 2 === 0) {
+            return { baseWidth: (boardWidth - sectionGap - sectionBorder) / 2, marginRight: sectionGap }
+        }
+        return { baseWidth: (boardWidth - sectionGap - sectionBorder) / 2, marginRight: 0 }
+    }
+
+    const calcSectionHeight2 = (boardHeight, sectionIdx) => {
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        if (sectionIdx < configAttributes.num_sections / 2) {
+            return { baseHeight: (boardHeight - sectionGap - sectionBorder) / 2, marginBottom: sectionGap }
+        }
+        return { baseHeight: (boardHeight - sectionGap - sectionBorder) / 2, marginBottom: 0 }
     }
 
     
-    const calcSectionWidth = (sectionIdx) => {
-        const num_cols = configAttributes.num_columns / 2
-        // const marginRight = sectionIdx % 2 === 0 ? configAttributes.s_gap : 0
-        const marginRight = configAttributes.s_gap
-        return num_cols * configAttributes.cell_width +
-        (num_cols - 1) * configAttributes.h_gap + marginRight
-    }
+    // const calcSectionWidth = (sectionIdx) => {
+    //     const num_cols = configAttributes.num_columns / 2
+    //     const marginRight = sectionIdx % 2 === 0 ? configAttributes.section_gap : 0
+    //     const width =  num_cols * configAttributes.cell_width + (num_cols - 1) * configAttributes.h_gap
+    //     return { width, marginRight }
+    // }
     
-    const calcSectionHeight = (sectionIdx) => {
-        const num_rows = configAttributes.num_rows / 2
-        // const marginBottom = sectionIdx < configAttributes.num_sections / 2 ? configAttributes.s_gap : 0
-        const marginBottom = configAttributes.s_gap
-        return num_rows * configAttributes.cell_height +
-        (num_rows - 1) * configAttributes.h_gap + marginBottom
-        // (num_rows - 1) * configAttributes.h_gap
-    }
+    // const calcSectionHeight = (sectionIdx) => {
+    //     const num_rows = configAttributes.num_rows / 2
+    //     const marginBottom = sectionIdx < configAttributes.num_sections / 2 ? configAttributes.section_gap : 0
+    //     const height =  num_rows * configAttributes.cell_height + (num_rows - 1) * configAttributes.h_gap
+    //     return { height, marginBottom }
+    // }
 
     const rotateSection = (sectionIdx, direction) => {
 
@@ -502,14 +556,21 @@ export default function Board (props) {
         setModalMessage("")
     }
     
-    const width = calcWidth()
-    const boardHeight = calcBoardHeight()
+    
+    // const sectionWidths = Array(4).fill().map((_, index) => calcSectionWidth(index))
+    // const sectionHeights = Array(4).fill().map((_, index) => calcSectionHeight(index))
+    
+    const boardwidth = calcBoardWidth2()
+    const boardHeight = calcBoardHeight2()
+
+    const sectionWidths = Array(4).fill().map((_, index) => calcSectionWidth2(boardwidth, index))
+    const sectionHeights = Array(4).fill().map((_, index) => calcSectionHeight2(boardHeight, index))
 
     return (
         <Fragment>
             <Stack
                 data_class="stack" 
-                sx={{ width: width, m: 'auto', mt: 15, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                sx={{ width: boardwidth, m: 'auto', mt: 15, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                 <TopMessage nextColor={nextColor}
                             winnerColor={winnerColor}
                             haveAWinner={haveAWinner}
@@ -531,8 +592,8 @@ export default function Board (props) {
                             board.map((section, sectionIdx) => 
                                 <Section 
                                     data_class="section"
-                                    width={calcSectionWidth(sectionIdx)}
-                                    height={calcSectionHeight(sectionIdx)}
+                                    width={sectionWidths[sectionIdx]}
+                                    height={sectionHeights[sectionIdx]}
                                     key={sectionIdx}
                                     section={section}
                                     sectionIdx={sectionIdx}

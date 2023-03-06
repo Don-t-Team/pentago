@@ -7,8 +7,8 @@ const Cell = (props) => {
 
     return (
         <Box sx={{
-                width: configAttributes.cell_width,
-                height: configAttributes.cell_height,
+                width: configAttributes.cell_width - 1,
+                height: configAttributes.cell_height - 1,
                 backgroundColor: cell['color'],
                 border: 1,
                 borderColor: 'black',
