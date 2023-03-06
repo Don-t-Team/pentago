@@ -9,7 +9,7 @@ import Controls from "./Controls"
 import configAttributes from "../config/attributes"
 import Modal from '../components/Modal';
 
-const changeColor = color =>  color === 'red' ? 'blue' : 'red';
+const changeColor = color =>  color === 'red' ? 'black' : 'red';
 
 const createInitialCell = () => (
     { color: "white", isOccupied: false }
@@ -264,7 +264,7 @@ const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
 export default function Board (props) {
     const [board, setBoard] = useState(createInitialBoard2);
     const [haveAWinner, setHaveAWinner] = useState(false);
-    const [nextColor, setNextColor] = useState('blue');
+    const [nextColor, setNextColor] = useState('black');
     const [winnerColor, setWinnerColor] = useState(undefined);
     const [activeSectionIdx, setActiveSectionIdx] = useState(null)
     const [moves, setMoves] = useState(createInitialMoves)
@@ -282,12 +282,12 @@ export default function Board (props) {
         setBoard(createInitialBoard2());
         setMoves(createInitialMoves());
         setHaveAWinner(false);
-        setNextColor('blue');
+        setNextColor('black');
         setCurState(0)
     };
 
     const getCurrentPlayer = () => (
-        nextColor === 'blue' ? 0 : 1
+        nextColor === 'black' ? 0 : 1
     )
 
     function onClickCallback(colIdx, rowIdx, sectionIdx) {

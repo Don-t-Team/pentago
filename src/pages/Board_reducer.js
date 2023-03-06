@@ -11,7 +11,7 @@ import Modal from '../components/Modal';
 
 import { reducer, initialState } from '../reducers';
 
-const changeColor = color =>  color === 'red' ? 'blue' : 'red';
+const changeColor = color =>  color === 'red' ? 'black' : 'red';
 
 // const createInitialCell = () => (
 //     { color: "white", isOccupied: false }
@@ -277,7 +277,7 @@ export default function Board (props) {
     };
 
     const getCurrentPlayer = () => (
-        nextColor === 'blue' ? 0 : 1
+        nextColor === 'black' ? 0 : 1
     )
 
     function onClickCallback(colIdx, rowIdx, sectionIdx) {

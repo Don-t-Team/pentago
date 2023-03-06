@@ -27,7 +27,7 @@ const initialState = {
     board: createInitialBoard(),
     moves: createInitialMoves(),
     phase: 0,
-    nextColor: "blue",
+    nextColor: 'black',
     winnerColor: null,
     haveAWinner: false,
     lastRotateDirection: null,

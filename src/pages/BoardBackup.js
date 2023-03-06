@@ -7,7 +7,7 @@ import Section from "./Section"
 
 import configAttributes from "../config/attributes"
 
-const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
+const advanceColor = color =>  color === 'red' ? 'black' : 'red';
 
 const createInitialBoard = () => {
     const board = Array(configAttributes.num_rows).fill(Array(configAttributes.num_columns).fill({color: "white", isOccupied: false}));
@@ -282,7 +282,7 @@ const mapSectionCellToBoardCell = (colIdx, rowIdx, sectionIdx) => {
 export default function Board(props) {
     const [board, setBoard] = useState(createInitialBoard);
     const [haveAWinner, setHaveAWinner] = useState(false);
-    const [nextColor, setNextColor] = useState('blue');
+    const [nextColor, setNextColor] = useState('black');
     const [winnerColor, setWinnerColor] = useState(undefined);
     
     const [moves, setMoves] = useState(Array(2).fill(true).map(() => []))
@@ -293,7 +293,7 @@ export default function Board(props) {
     const reset = () => {
         setBoard(createInitialBoard());
         setHaveAWinner(false);
-        setNextColor('blue');
+        setNextColor('black');
         setFirstAvailableIndex(Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
     };
 
@@ -344,7 +344,7 @@ export default function Board(props) {
         const newColor = advanceColor(nextColor)
         newBoard[row][col]["color"] = nextColor
         
-        const currentPlayer = nextColor === 'blue' ? 0 : 1
+        const currentPlayer = nextColor === 'black' ? 0 : 1
         const newMoves = moves.slice()
         newMoves[currentPlayer].push([row, col])
         if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, board)) {

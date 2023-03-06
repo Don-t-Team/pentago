@@ -9,7 +9,7 @@ import Controls from "./Controls"
 import configAttributes from "../config/attributes"
 import Modal from '../components/Modal';
 
-const advanceColor = color =>  color === 'red' ? 'blue' : 'red';
+const advanceColor = color =>  color === 'red' ? 'black' : 'red';
 
 const createInitialBoard = () => {
     const board = Array(configAttributes.num_rows).fill(Array(configAttributes.num_columns).fill({color: "white", isOccupied: false}));
@@ -290,7 +290,7 @@ const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
 export default function Board(props) {
     const [board, setBoard] = useState(createInitialBoard);
     const [haveAWinner, setHaveAWinner] = useState(false);
-    const [nextColor, setNextColor] = useState('blue');
+    const [nextColor, setNextColor] = useState('black');
     const [winnerColor, setWinnerColor] = useState(undefined);
     const [activeSectionIdx, setActiveSectionIdx] = useState(null)
     const [rotateSectionIdx, setRotateSectionIdx] = useState(null)
@@ -308,13 +308,13 @@ export default function Board(props) {
         setBoard(createInitialBoard());
         setMoves(createInitialMoves());
         setHaveAWinner(false);
-        setNextColor('blue');
+        setNextColor('black');
         setPick(true)
         // setFirstAvailableIndex(Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
     };
 
     const getCurrentPlayer = () => (
-        nextColor === 'blue' ? 0 : 1
+        nextColor === 'black' ? 0 : 1
     )
 
     function onClickCallback(colIdx, rowIdx, sectionIdx) {
@@ -412,7 +412,7 @@ export default function Board(props) {
             // get the color of player move in the section to rotate
             const playerColor = board[oldBoardRowIdx][oldBoardColIdx]["color"]
             let player
-            if (playerColor !== "white" && playerColor === "blue")
+            if (playerColor !== "white" && playerColor === 'black')
                 player = 0
             else if (playerColor === "red")
                 player = 1
