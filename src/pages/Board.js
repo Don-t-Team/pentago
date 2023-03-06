@@ -574,7 +574,9 @@ export default function Board (props) {
             <Stack
                 data_class="stack" 
                 sx={{ 
-                    backgroundColor: configAttributes.gameBackground,
+                    border: `6px solid ${configAttributes.stack_border_color}`,
+                    borderRadius: "25px",
+                    backgroundColor: configAttributes.stack_background,
                     width: configAttributes.width,
                     height: configAttributes.height, 
                     m: 'auto', 
@@ -595,7 +597,7 @@ export default function Board (props) {
                         container 
                         columns={configAttributes.num_columns}                
                         sx={{
-                            border: "6px solid black",
+                            border: `6px solid ${configAttributes.board_border_color}`,
                             borderRadius: "15px",
                             backgroundColor: configAttributes.boardBackground,
                             width: boardwidth,

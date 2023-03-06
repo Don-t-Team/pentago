@@ -1,15 +1,22 @@
-import { grey, red } from "@mui/material/colors"
+import { grey, red, orange } from "@mui/material/colors"
 
-const gameBackground = grey[100]
+const stack_background = grey[100]
 const boardBackground = grey[200]
-const sectionBackground = red[900]
-const cellBackground = red[800]
+const sectionBackground = grey[500]
+const cellBackground = orange[400]
+const modal_background = grey[200]
+const modal_innerBackground = orange[300]
+
+const board_border_color = grey[200]
+const stack_border_color = "black"
 
 const configAttributes = {
-    gameBackground,
+    stack_background,
     boardBackground,
     sectionBackground,
     cellBackground,
+    modal_background,
+    modal_innerBackground,
     width: 600,
     height: 600,
     num_rows: 6,
@@ -23,6 +30,8 @@ const configAttributes = {
     section_border_width : 1,
     section_padding: 10,
     board_border_width: 5,
+    board_border_color,
+    stack_border_color 
 }
 
 export default configAttributes
