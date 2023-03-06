@@ -5,16 +5,14 @@ import configAttributes from "../config/attributes"
 
 const Row = props => {
     const {onClickCallback, row, rowIdx, sectionIdx, width} = props;
-
-    // console.log("row", row)
-
+    
     return (
         <Grid 
               data_class={"row"}
               row="true"
               container 
               columns={configAttributes.num_columns / 2}
-              columnGap={0.5}
+              columnGap={0.25}
               sx={{
                   display: 'flex',
                   flexDirection: 'row',
