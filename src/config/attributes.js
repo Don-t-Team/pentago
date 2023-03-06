@@ -6,7 +6,7 @@ const configAttributes = {
     cell_width: 50,
     cell_height: 50,
     cell_border_width: 1,
-    section_gap: 4,
+    section_gap: 10,
     section_border_width : 1
 }
 

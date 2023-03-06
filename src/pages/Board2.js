@@ -276,6 +276,7 @@ export default function Board (props) {
     const [showUndoButton, setShowUndoButton] = useState(false)
     const [modalOpen, setModalOpen] = useState(false)
     const [modalMessage, setModalMessage] = useState("")
+    const [undo, setUndo] = useState(false)
 
     const reset = () => {
         setBoard(createInitialBoard2());
@@ -317,6 +318,7 @@ export default function Board (props) {
         setMoves(newMoves)
         setCurState(newState)
         setShowUndoButton(true)
+        setUndo(true)
     }
 
     // const calcBoardWidth = (sectionWidths) => { 
@@ -488,6 +490,9 @@ export default function Board (props) {
         setShowUndoButton(true)
         setLastRotateSectionIdx(sectionIdx)
         setLastRotateDirection(direction)
+        setUndo(true)
+        setShowUndoButton(true)
+
         // console.log("rotated section: ", sectionIdx)
         // console.log("new moves", newMoves)
     }
@@ -522,6 +527,11 @@ export default function Board (props) {
     }
 
     const onUndoCallback = () => {
+
+        if (!undo) {
+            return
+        }
+
         const prevState = rollbackState(curState)
         if (states[prevState] === "click") {
             undoClick()
@@ -538,6 +548,9 @@ export default function Board (props) {
             // which is also the previous state
             undoRotate()
         }
+
+        setUndo(false)
+        setShowUndoButton(false)
     }
     
     const onRotateCallback = () => {
