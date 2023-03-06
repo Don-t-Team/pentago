@@ -22,11 +22,13 @@ const Section = props => {
             container
             item
             sx={{
-                border: "1px solid black",
+                backgroundColor: configAttributes.sectionBackground,
+                border: `1px solid white`,
                 borderRadius: "15%",
                 width: sectionWidth + 'px',
                 height: sectionHeight + 'px',
                 mr: marginRight + 'px',
+                mb: marginBottom + 'px',
                 padding: "4px",
                 display: "flex",
                 flexDirection: "row",

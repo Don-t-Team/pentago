@@ -16,7 +16,7 @@ const createInitialBoard = () => {
 }
 
 const createInitialCell = () => (
-    { color: "white", isOccupied: false }
+    { color: configAttributes.cellBackground, isOccupied: false }
 )
 
 const createInitialMoves = () => {

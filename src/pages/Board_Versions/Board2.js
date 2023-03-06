@@ -9,7 +9,7 @@ import Controls from "./Controls"
 import configAttributes from "../config/attributes"
 import Modal from '../components/Modal';
 
-const changeColor = color =>  color === 'red' ? 'black' : 'red';
+const changeColor = color =>  color === 'white' ? 'black' : 'white';
 
 const createInitialCell = () => (
     { color: "white", isOccupied: false }

@@ -1,4 +1,4 @@
-import {Fragment, useState} from 'react';
+import {Fragment, useReducer, useState} from 'react';
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid"
 
@@ -9,41 +9,25 @@ import Controls from "./Controls"
 import configAttributes from "../config/attributes"
 import Modal from '../components/Modal';
 
-const advanceColor = color =>  color === 'red' ? 'black' : 'red';
+import { reducer, initialState } from '../reducers';
 
-const createInitialBoard = () => {
-    const board = Array(configAttributes.num_rows).fill(Array(configAttributes.num_columns).fill({color: "white", isOccupied: false}));
-    const initialBoard = board.map((row, rowIdx) => row.map( (col, colIdx) => {
-        const sectionIdx = getSectionIndex(rowIdx, colIdx)
-        return {...board[rowIdx][colIdx], section: sectionIdx, row: rowIdx, column: colIdx }
-    }));
-    return initialBoard
+const changeColor = color =>  color === 'white' ? 'black' : 'white';
+
+// const createInitialCell = () => (
+//     { color: "white", isOccupied: false }
+// )
+
+const advanceState = (phase) => {
+    return (phase + 1) % 2
 }
 
-const renderBoard = (board) => {
-    const getTopOrBottomSection = (start, end) => {
-        return board.slice(start, end)
-    }
-
-    const divideTopOrBottomSection = (section, startFirst, endFirst, startSecond, endSecond) => {
-        const first = section.map((row, _) => row.slice(startFirst, endFirst))
-        const second = section.map((row, _) => row.slice(startSecond, endSecond))
-        return [[...first], [...second]]
-    }
-
-    const topSection = getTopOrBottomSection(0, configAttributes.num_rows / 2)
-    const bottomSection = getTopOrBottomSection(configAttributes.num_rows / 2, configAttributes.num_rows)
-    const [topLeftSection, topRightSection] = divideTopOrBottomSection(topSection, 0, configAttributes.num_columns / 2, configAttributes.num_columns / 2, configAttributes.num_columns)
-    const [bottomLeftSection, bottomRightSection] = divideTopOrBottomSection(bottomSection, 0, configAttributes.num_columns / 2, configAttributes.num_columns / 2, configAttributes.num_columns)
-
-    const newBoard = [[...topLeftSection], [...topRightSection], [...bottomLeftSection], [...bottomRightSection]]
-
-    return newBoard
+const rollbackState = (phase) => {
+    return (phase - 1) < 0 ? 1 : phase - 1
 }
 
 // const createInitialBoard2 = () => {
 //     const createInitalSection = (sectionIdx) => {
-//         const section = Array(configAttributes.num_rows / 2).fill(Array(configAttributes.num_columns)).fill({ color: "white", isOccupied: false })
+//         const section = Array(configAttributes.num_rows / 2).fill(Array(configAttributes.num_columns / 2).fill(createInitialCell()))
 //         const initialSection = section.map((row, rowIdx) => row.map((col, colIdx) => {
 //             return {...section[rowIdx][colIdx], section: sectionIdx, row: rowIdx, column: colIdx}
 //         }))
@@ -59,47 +43,43 @@ const renderBoard = (board) => {
 const getActiveSection = (activeSectionIdx, board) => {
     if (activeSectionIdx === 0) {
         const activeRowsIdx = Array(3).fill().map((_, index) => index)
-        const activeSection = activeRowsIdx.map(rowIdx => board[rowIdx].slice(0, configAttributes.num_columns / 2))
+        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
         return activeSection
     }
     if (activeSectionIdx === 1) {
         const activeRowsIdx = Array(3).fill().map((_, index) => index)
-        const activeSection = activeRowsIdx.map(rowIdx => board[rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
+        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
         return activeSection
     }
     if (activeSectionIdx === 2) {
         const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
-        const activeSection = activeRowsIdx.map(rowIdx => board[rowIdx].slice(0, configAttributes.num_columns / 2))
+        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
         return activeSection
     }
     if (activeSectionIdx === 3) {
         const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
-        const activeSection = activeRowsIdx.map(rowIdx => board[rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
+        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
         return activeSection
     }
 }
 
-const getSectionIndex = (rowIdx, colIdx) => {
-    const mid = configAttributes.num_rows / 2
-    if (rowIdx < mid && colIdx < mid) 
-        return 0
-    if (rowIdx < mid && colIdx >= mid)
-        return 1
-    if (rowIdx >= mid && colIdx < mid)
-        return 2
-    if (rowIdx >= mid && colIdx >= mid)
-        return 3
-}
+// const getSectionIndex = (rowIdx, colIdx) => {
+//     const mid = configAttributes.num_rows / 2
+//     if (rowIdx < mid && colIdx < mid) 
+//         return 0
+//     if (rowIdx < mid && colIdx >= mid)
+//         return 1
+//     if (rowIdx >= mid && colIdx < mid)
+//         return 2
+//     if (rowIdx >= mid && colIdx >= mid)
+//         return 3
+// }
 
 const createInitialMoves = () => {
     return Array(2).fill(true).map(() => [])
 }
 
 const doWeHaveAWinner = (moves, player, board) => {
-    const startState = moves.slice()
-    const frontier = [startState]
-    const processed = Array(board.length).fill(Array(board[0].length).fill(false))
-
     const goalTest = (state) => {
         const diagonalCheck = () => {
             const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[0]]))
@@ -108,7 +88,8 @@ const doWeHaveAWinner = (moves, player, board) => {
             let start = state[0]
             let curRow = rows[start[0]]
             let curCol = cols[start[0]]
-            let count = 0
+            // counting the start cell itself 
+            let count = 1
             while (rows[curRow] != null && cols[curCol] != null) {
                 const newRow = curRow + 1
                 const newCol = curCol + 1
@@ -116,8 +97,6 @@ const doWeHaveAWinner = (moves, player, board) => {
                 curCol = newCol
                 if (rows[newRow] && cols[newCol])
                     count++
-                else
-                    break
             }
 
             if (count >= 5)
@@ -134,30 +113,65 @@ const doWeHaveAWinner = (moves, player, board) => {
                 curCol = newCol
                 if (rows[newRow] && cols[newCol])
                     count++
-                else
-                    break
             }
 
-            // return count >= 5
             if (count >= 5)
                 return true
 
             return false
         }
 
-        const horizontalCheck = (mostOccCol, occurrences) => {
+        // a helper function for vertical and horizontal goal checks
+        const winConditionCheck = (winCondition, mostOccRowOrCol, direction) => {
+            const win = state.reduce((connected, curCell) => {
+                const [curCellRow, curCellCol] = curCell
+                const rowOrColToCheck = direction === "horizontal" ? curCellRow : curCellCol
+                const rowOrColToSlide = direction === "horizontal" ? curCellCol : curCellRow
+                if (rowOrColToCheck === mostOccRowOrCol && winCondition[rowOrColToSlide] != null) {
+                    delete winCondition[rowOrColToSlide]
+                    return [...connected, curCell.slice()]
+                }
+                return connected
+            }, []) 
+
+            return Object.keys(winCondition).length === 0
+        }
+
+        const verticalCheck = (mostOccCol, occurrences) => {
             if (occurrences < 5) {
                 return false
             }
-            const res = state.filter((curCell, _) => (curCell[1] === mostOccCol))
-            return res.length >= configAttributes.num_columns - 1
+
+            // a list of horizontal index from 0 to 5
+            const conditionOne = Object.fromEntries(Array(5).fill().map((_, index) => [index, index]))
+            // a list of horizontal index from 1 to 6
+            const conditionTwo = Object.fromEntries(Array(5).fill().map((_, index) => [index + 1, index + 1]))
+
+            const winsInConditionOne = winConditionCheck(conditionOne, mostOccCol, "vertical")
+            if (winsInConditionOne)
+                return true
+
+            const winsInConditionTwo = winConditionCheck(conditionTwo, mostOccCol, "vertical")
+            return winsInConditionTwo
         }
 
-        const verticalCheck = (mostOccRow, occurrences) => (
-            occurrences < 5
-                ? false
-                : state.filter((curCell, _) => (curCell[0] === mostOccRow)).length >= configAttributes.num_rows - 1
-        )
+        const horizontalCheck = (mostOccRow, occurrences) => {
+            if (occurrences < 5) {
+                return false
+            }
+
+            // a list of vertical index from 0 to 5
+            const conditionOne = Object.fromEntries(Array(5).fill().map((_, index) => [index, index]))
+            // a list of vertical index from 1 to 6
+            const conditionTwo = Object.fromEntries(Array(5).fill().map((_, index) => [index + 1, index + 1]))
+
+            const winsInConditionOne = winConditionCheck(conditionOne, mostOccRow, "horizontal")
+            if (winsInConditionOne)
+                return true
+
+            const winsInConditionTwo = winConditionCheck(conditionTwo, mostOccRow, "horizontal")
+            return winsInConditionTwo
+        }
 
         const mostOccIndex = () => {
             // Finds the cell with the most occurrences in a state
@@ -188,6 +202,7 @@ const doWeHaveAWinner = (moves, player, board) => {
                     : occCols[cell[1]]++
             })
 
+            // need to check for multiple most occurred rows and columns
             const [mostOccRow, occRow] = find(occRows)
             const [mostOccCol, occCol] = find(occCols)
 
@@ -195,10 +210,6 @@ const doWeHaveAWinner = (moves, player, board) => {
                 mostOccRow, occRow,
                 mostOccCol, occCol
             }
-        }
-
-        const processedCheck = (cell) => {
-            return processed[cell[0]][cell[1]]
         }
 
         const nullCheck = () => {
@@ -210,60 +221,25 @@ const doWeHaveAWinner = (moves, player, board) => {
 
         const { mostOccRow, occRow, mostOccCol, occCol } = mostOccIndex()
 
-        if (horizontalCheck(mostOccCol, occCol) || verticalCheck(mostOccRow, occRow) || diagonalCheck())
+        if (verticalCheck(mostOccCol, occCol) || horizontalCheck(mostOccRow, occRow) || diagonalCheck())
             return true
 
         return false
     }
 
-    const nullCheck = (state) => {
-        return state.every((cell, _) => cell !== null)
-    }
+    const mapStateCellsToBoardCells = (state) => {
+        return state.map((cell) => {
+            console.log("cell in state", cell)
+            const [sectionIdx, rowIdx, colIdx] = cell
+            const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
+            return [boardRowIdx, boardColIdx]
+        })
+    } 
 
-    const getSuccessors = (state) => {
-        const successors = []
-        for (let i = -1; i <= 1; i++) {
-            if (i === 0) continue;
-                const newStateHorizontal = state.map((cell, _) => cell[0] + i < 0 || cell[0] + i === configAttributes.num_rows
-                    ? null
-                    : [cell[0] + i, cell[1]]
-                ) 
-                const newStateVertical = state.map((cell, _) => cell[1] + i < 0 || cell[1] + i === configAttributes.num_columns
-                    ? null
-                    : [cell[0], cell[1] + i]
-                )  
-                if (nullCheck(newStateHorizontal))
-                    successors.push(newStateHorizontal)
-                if (nullCheck(newStateVertical))
-                    successors.push(newStateVertical)
-        }
-        return successors
-    }
-
-    const isUniqueState = (state) => {
-        const key = state.reduce((sum, cell, cellIdx) => (sum + cell[0] + cell[1]), 0)
-        if (uniqueStates[key] == null) {
-            uniqueStates[key] = [state]
-            return true
-        }
-        uniqueStates[key].push(state)
-        return false
-    }
-
-    const uniqueStates = {}
-
-    while (frontier.length > 0) {
-        const state = frontier.shift()
-        if (isUniqueState(state)) {
-            if (goalTest(state)) {
-                console.log("winning state", state)
-                return true
-            }
-            const successors = getSuccessors(state)
-            successors.forEach((successor) => {
-                    frontier.push(successor)
-            })
-        }
+    const state = mapStateCellsToBoardCells(moves)
+    if (goalTest(state)) {
+        console.log("winning state", state)
+        return true
     }
     return false
 }
@@ -287,30 +263,17 @@ const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
     }
 }
 
-export default function Board(props) {
-    const [board, setBoard] = useState(createInitialBoard);
-    const [haveAWinner, setHaveAWinner] = useState(false);
-    const [nextColor, setNextColor] = useState('black');
-    const [winnerColor, setWinnerColor] = useState(undefined);
-    const [activeSectionIdx, setActiveSectionIdx] = useState(null)
-    const [rotateSectionIdx, setRotateSectionIdx] = useState(null)
-    const [pick, setPick] = useState(true)
-    const [rotate, setRotate] = useState(false)
-    const [modalOpen, setModalOpen] = useState(false)
-    const [modalMessage, setModalMessage] = useState("")
-    
-    const [moves, setMoves] = useState(createInitialMoves)
-
-    // const [firstAvailableIndex, setFirstAvailableIndex] =
-    //     useState(() => Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
+export default function Board (props) {
+    const states = ["click", "rotate"]
+    const [state, dispatch] = useReducer(reducer, initialState)
+    const { board, moves, phase, nextColor, winnerColor, haveAWinner,
+        lastRotateDirection, lastRotateSectionIdx, showUndoButton,
+        modalOpen, modalMessage, undo } = state
 
     const reset = () => {
-        setBoard(createInitialBoard());
-        setMoves(createInitialMoves());
-        setHaveAWinner(false);
-        setNextColor('black');
-        setPick(true)
-        // setFirstAvailableIndex(Array(configAttributes.num_columns).fill(configAttributes.num_rows - 1));
+        dispatch({
+            type: 'RESET GAME'
+        })
     };
 
     const getCurrentPlayer = () => (
@@ -322,71 +285,91 @@ export default function Board(props) {
             return;
         }
 
-        if (!pick) {
+        if (states[phase] !== 'click') {
             return;
         }
-        
-        const [row, col] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
-        const activeSectionIdx = getSectionIndex(row, col)
 
-        if (board[row][col].isOccupied)
+        const activeSectionIdx = sectionIdx
+
+        if (board[activeSectionIdx][rowIdx][colIdx].isOccupied)
             return
 
         const newBoard = board.slice()
-        
-        const newColor = advanceColor(nextColor)
-        newBoard[row][col]["color"] = nextColor
-        newBoard[row][col]["isOccupied"] = true
-        
+        const newMoves = moves.slice()
         const currentPlayer = getCurrentPlayer()
-        const newMoves = moves.slice()
-
-        if (newMoves[currentPlayer].filter((move, _) => move[0] === row && move[1] === col).length < 1)
-            newMoves[currentPlayer].push([row, col])
-
-        if (newMoves[currentPlayer].length >= 5 && doWeHaveAWinner(newMoves[currentPlayer], nextColor, board)) {
-            setHaveAWinner(true)
-            setMoves(createInitialMoves)
-            setWinnerColor(nextColor);
-        }
+        const newState = advanceState(phase)
         
-        setActiveSectionIdx(activeSectionIdx)
-        setBoard(newBoard)
-        setNextColor(newColor)
-        setMoves(newMoves)
-        setPick(false)
-        setRotate(true)
+        newBoard[activeSectionIdx][rowIdx][colIdx]["color"] = nextColor
+        newBoard[activeSectionIdx][rowIdx][colIdx]["isOccupied"] = true
+        newMoves[currentPlayer].push([sectionIdx, rowIdx, colIdx])
+        
+        dispatch({
+            type: "UPDATE STATE AFTER PHASE",
+            newState: {
+                board: newBoard,
+                moves: newMoves,
+                phase: newState,
+                showUndoButton: true,
+                undo: true
+            }
+        })
     }
 
-    const calcWidth = () => { 
-        return configAttributes.num_columns * configAttributes.cell_width +
-        (configAttributes.num_columns - 1) * configAttributes.h_gap + 
-        configAttributes.s_gap
+    const calcBoardHeight2 = () => {
+        const cellBorder = configAttributes.cell_border_width * 2
+        const cellHeight = configAttributes.cell_height + cellBorder
+        const heightGap = configAttributes.h_gap
+        const numRows = configAttributes.num_rows
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        const sectionPadding = configAttributes.section_padding * 2
+        const boardBorder = configAttributes.board_border_width * 2
+        return numRows * cellHeight + (numRows - 1) * heightGap + sectionBorder + sectionGap + sectionPadding + boardBorder
+
     }
 
-    
-    const calcSectionWidth = (sectionIdx) => {
-        const num_cols = configAttributes.num_columns / 2
-        const marginRight = sectionIdx % 2 === 0 ? configAttributes.s_gap : 0
-        return num_cols * configAttributes.cell_width +
-        (num_cols - 1) * configAttributes.h_gap + marginRight
-    }
-    
-    const calcSectionHeight = (sectionIdx) => {
-        const num_rows = configAttributes.num_rows / 2
-        const marginBottom = sectionIdx < configAttributes.num_sections / 2 ? configAttributes.s_gap : 0
-        return num_rows * configAttributes.cell_height +
-        (num_rows - 1) * configAttributes.h_gap + marginBottom
+    const calcBoardWidth2 = () => {
+        const cellBorder = configAttributes.cell_border_width * 2
+        const cellWidth = configAttributes.cell_width + cellBorder
+        const widthGap = configAttributes.h_gap
+        const numCols = configAttributes.num_columns
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        const sectionPadding = configAttributes.section_padding * 2
+        const boardBorder = configAttributes.board_border_width * 2
+        return numCols * cellWidth + (numCols - 1) * widthGap + sectionBorder + sectionGap + sectionPadding + boardBorder
     }
 
-    const rotateSection = (sectionIdx) => {
+    const calcSectionWidth2 = (boardWidth, sectionIdx) => {
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        const boardBorder = configAttributes.board_border_width * 2
+        if (sectionIdx % 2 === 0) {
+            return { baseWidth: (boardWidth - sectionGap - sectionBorder - boardBorder) / 2, marginRight: sectionGap }
+        }
+        return { baseWidth: (boardWidth - sectionGap - sectionBorder - boardBorder) / 2, marginRight: 0 }
+    }
 
-        // const rotateMovesInRotatedSection = () => {
-            
-        // }
+    const calcSectionHeight2 = (boardHeight, sectionIdx) => {
+        const sectionGap = configAttributes.section_gap
+        const sectionBorder = configAttributes.section_border_width * 2
+        const boardBorder = configAttributes.board_border_width * 2
+        if (sectionIdx < configAttributes.num_sections / 2) {
+            return { baseHeight: (boardHeight - sectionGap - sectionBorder - boardBorder) / 2, marginBottom: sectionGap }
+        }
+        return { baseHeight: (boardHeight - sectionGap - sectionBorder - boardBorder) / 2, marginBottom: 0 }
+    }
 
-        const activeSection = getActiveSection(sectionIdx, board)
+    const rotateSection = (sectionIdx, direction) => {
+
+        console.log("rotating section", sectionIdx)
+
+        const activeSection = board[sectionIdx].slice()
         const newMoves = moves.slice()
+        // Because a change of player color happens after a rotation,
+        // undoing a rotation requires an change of player color to the
+        // previous state
+        const newColor = changeColor(nextColor)
         
         // get index array of all cells in the active section
         const activeCellsIdx = activeSection.map((row) => row.map((_, cellIdx) => cellIdx))
@@ -398,98 +381,213 @@ export default function Board(props) {
             return newCell
         }))
 
+        // keys are the moves in the state of blue player's moves
+        const blueMovesToRotate = Object.fromEntries(newMoves[0].map((move, index) => {
+            if (move[0] === sectionIdx) {
+                return [[...move], index]
+            }
+            return undefined
+        }).filter((move) => move != undefined))
+
+        // keys are the moves in the state of red player's moves
+        const redMovesToRotate = Object.fromEntries(newMoves[1].map((move, index) => {
+            if (move[0] === sectionIdx) {
+                return [[...move], index]
+            }
+            return undefined
+        }).filter((move) => move != undefined))
+
          // rotate section 90 degrees clockwise
         activeCellsIdx.forEach((row, rowIdx) => row.forEach((colIdx, _) => {
+            const dim = configAttributes.num_rows / 2
+            let oldRowIdx = rowIdx
+            let oldColIdx = colIdx
             let newColIdx
-            let newRowIdx = colIdx
-            if (rowIdx === 0) newColIdx = 2
-            if (rowIdx === 1) newColIdx = 1
-            if (rowIdx === 2) newColIdx = 0
-            newActiveSection[newRowIdx][newColIdx] = activeSection[rowIdx][colIdx]
-            const [oldBoardRowIdx, oldBoardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
-            const [newBoardRowIdx, newBoardColIdx] = mapSectionCellToBoardCell(newRowIdx, newColIdx, sectionIdx)
-            
-            // get the color of player move in the section to rotate
-            const playerColor = board[oldBoardRowIdx][oldBoardColIdx]["color"]
-            let player
-            if (playerColor !== "white" && playerColor === 'black')
-                player = 0
-            else if (playerColor === "red")
-                player = 1
+            let newRowIdx
 
-            // get the moves of the player if the cell is not occupied
-            if (player === 0 || player === 1) {
-                const playerMoves = newMoves[player].slice()
-                // rotates the moves the player have made if the move is in the section
-                // to rotate
-                // [oldBoardRowIdx, oldBoardColIdx] is the cell to be rotated and is in
-                // the array of moves the player has made
-                // [newBoardRowIdx, newBoardColIdx] is the new cell in the array of moves
-                // of the player
-                const newPlayerMoves = playerMoves.map((move) => {
-                    if (move[0] === oldBoardRowIdx && move[1] === oldBoardColIdx)
-                        return [newBoardRowIdx, newBoardColIdx]
-                    else
-                        return move.slice()
-                })
-                if (newPlayerMoves != null)
-                    newMoves[player] = newPlayerMoves
+            if (direction === "Clockwise") {
+                newRowIdx = oldColIdx
+                newColIdx = dim - 1 - oldRowIdx
+            }
+            else if (direction === "Counter Clockwise") {
+                newColIdx = oldRowIdx
+                newRowIdx = dim - 1 - oldColIdx
+            }
+
+            newActiveSection[newRowIdx][newColIdx] = activeSection[oldRowIdx][oldColIdx]
+
+            const newBlueMoveIdx = blueMovesToRotate[[sectionIdx, oldRowIdx, oldColIdx]]
+            const newRedMoveIdx = redMovesToRotate[[sectionIdx, oldRowIdx, oldColIdx]]
+
+            if (newBlueMoveIdx != null) {
+                newMoves[0][newBlueMoveIdx] = [sectionIdx, newRowIdx, newColIdx]
+                console.log("old blue move", [sectionIdx, oldRowIdx, oldColIdx])
+                console.log("new blue move", [sectionIdx, newRowIdx, newColIdx])
+            }
+            if (newRedMoveIdx != null) {
+                newMoves[1][newRedMoveIdx] = [sectionIdx, newRowIdx, newColIdx]
+                console.log("old red move", [sectionIdx, oldRowIdx, oldColIdx])
+                console.log("new red move", [sectionIdx, newRowIdx, newColIdx])                
             }
         }))
 
-        // creates new board with the new active section
         const newBoard = board.slice()
-        newActiveSection.forEach((row, rowIdx) => row.forEach((cell, colIdx) => {
-            const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
-            newBoard[boardRowIdx][boardColIdx] = cell
-        }))
-
-
         const currentPlayer = getCurrentPlayer()
+        const newState = advanceState(phase)
+
+        newBoard[sectionIdx] = newActiveSection
         const currentPlayerMoves = newMoves[currentPlayer].slice()
 
-        if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, newBoard))
-            setHaveAWinner(true)
-            setWinnerColor(nextColor)
-
-        setBoard(newBoard)
-        setMoves(newMoves)
-        setRotate(false)
-        setPick(true)
-
-        console.log("rotated section: ", sectionIdx)
-    }
-
-    const onRotateCallback = () => {
-        if (!rotate) {
-            return;
+        if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, newBoard)) {
+            dispatch({
+                type: 'UPDATE WINNER',
+                winnerColor: nextColor
+            })
         }
-        // prevents picking a new cell by setting rotate to false
-        setRotate(true)
-        setModalOpen(true)
-        setModalMessage("Select a section to rotate")        
+
+        // setBoard(newBoard)
+        // setMoves(newMoves)
+        // setphase(newState)
+        // setShowUndoButton(true)
+        // setLastRotateSectionIdx(sectionIdx)
+        // setLastRotateDirection(direction)
+        // setUndo(true)
+        // setShowUndoButton(true)
+        // setNextColor(newColor)
+
+        dispatch({
+            type: "UPDATE STATE AFTER PHASE",
+            newState: {
+                ...state,
+                board: newBoard,
+                moves: newMoves,
+                phase: newState,
+                showUndoButton: true,
+                lastRotateSectionIdx: sectionIdx,
+                lastRotateDirection: direction,
+                undo: true,
+                showUndoButton: true,
+                nextColor: newColor
+            }
+        })
+
+        // console.log("rotated section: ", sectionIdx)
+        // console.log("new moves", newMoves)
     }
 
-    const onModalClickCallback = (sectionIdx) => {
-        console.log("section to rotate", sectionIdx)
-        console.log("rotating section: ", sectionIdx)
-        rotateSection(sectionIdx)
-        setModalOpen(false)
-        setModalMessage("")
+    const undoClick = () => {
+        const currentPlayer = getCurrentPlayer()
+        const prevMoves = moves.slice()
+        const prevState = rollbackState(phase)
+        const [lastSectionIdx, lastRowIdx, lastColIdx] = prevMoves[currentPlayer].pop()
+        const prevBoard = board.map((section, sectionIdx) => section.map((row, rowIdx) => row.map((cell, colIdx) => {
+            if (sectionIdx === lastSectionIdx && rowIdx === lastRowIdx && colIdx === lastColIdx) {
+                const newCell = {...cell}
+                newCell["color"] = "white"
+                newCell["isOccupied"] = false
+                return newCell
+            }
+            return {...cell}
+        })))
+
+        dispatch({
+            type: "UPDATE STATE AFTER PHASE",
+            newState: {
+                board: prevBoard,
+                moves: prevMoves,
+                phase: prevState,
+                showUndoButton: false
+            }
+        })   
+    }
+
+    const undoRotate = () => {
+        if (lastRotateDirection === "Clockwise") {
+            rotateSection(lastRotateSectionIdx, "Counter Clockwise")
+        }
+        else if (lastRotateDirection === "Counter Clockwise") {
+            rotateSection(lastRotateSectionIdx, "Clockwise")
+        }
+    }
+
+    const onUndoCallback = () => {
+        if (!undo) {
+            return
+        }
+
+        const prevState = rollbackState(phase)
+        if (states[prevState] === "click") {
+            undoClick()
+            // const prevState = rollbackState(phase)
+            // setphase(prevState)
+
+        }
+        else if (states[prevState] === "rotate") {
+            // don't need to roll back state because a rotation moves to the next state
+            // which is also the previous state
+            undoRotate()
+        }
+
+        dispatch({
+            type: "UPDATE STATE AFTER PHASE",
+            newState: {
+                undo: false,
+                showUndoButton: false
+            }
+        })
     }
     
-    const width = calcWidth()
+    const onRotateCallback = () => {
+        if (states[phase] !== 'rotate') {
+            return;
+        }
 
-    console.log("moves", moves)
+        dispatch({
+            type: 'UPDATE MESSAGE CENTER',
+            modalOpen: true,
+            modalMessage: "Select a section to rotate"
+        })
+    }
+
+    const onModalClickCallback = (sectionIdx, direction) => {
+        rotateSection(sectionIdx, direction)
+        const newColor = changeColor(nextColor)
+
+        dispatch({
+            type: 'UPDATE STATE AFTER MODAL CLICK',
+            newState: {
+                nextColor: newColor,
+                modalOpen: false,
+                modalMessage: ''
+            }
+        })
+    }
+    
+    const boardwidth = calcBoardWidth2()
+    const boardHeight = calcBoardHeight2()
+
+    const sectionWidths = Array(4).fill().map((_, index) => calcSectionWidth2(boardwidth, index))
+    const sectionHeights = Array(4).fill().map((_, index) => calcSectionHeight2(boardHeight, index))
 
     return (
         <Fragment>
             <Stack
                 data_class="stack" 
-                sx={{ width: width, m: 'auto', mt: 15, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                sx={{ 
+                    backgroundColor: configAttributes.gameBackground,
+                    width: configAttributes.width,
+                    height: configAttributes.height, 
+                    m: 'auto', 
+                    mt: 15, 
+                    display: "flex", 
+                    flexDirection: "column", 
+                    justifyContent: "center", 
+                    alignItems: "center" 
+                }}>
                 <TopMessage nextColor={nextColor}
                             winnerColor={winnerColor}
                             haveAWinner={haveAWinner}
+                            phase={states[phase]}
                             reset={reset} />
                 {
                     <Grid 
@@ -497,17 +595,22 @@ export default function Board(props) {
                         container 
                         columns={configAttributes.num_columns}                
                         sx={{
+                            border: "6px solid black",
+                            borderRadius: "15px",
+                            backgroundColor: configAttributes.boardBackground,
+                            width: boardwidth,
+                            height: boardHeight,
                             display: 'flex',
                             flexDirection: 'row',
                             mb: 0.5,
                         }}
                     >
                         {
-                            renderBoard(board).map((section, sectionIdx) => 
+                            board.map((section, sectionIdx) => 
                                 <Section 
                                     data_class="section"
-                                    width={calcSectionWidth(sectionIdx)}
-                                    height={calcSectionHeight(sectionIdx)}
+                                    width={sectionWidths[sectionIdx]}
+                                    height={sectionHeights[sectionIdx]}
                                     key={sectionIdx}
                                     section={section}
                                     sectionIdx={sectionIdx}
@@ -517,7 +620,7 @@ export default function Board(props) {
                         }
                     </Grid>
                 }
-                <Controls onRotateCallback={onRotateCallback}/>
+                <Controls onRotateCallback={onRotateCallback} showUndoButton={showUndoButton} onUndoCallback={onUndoCallback}/>
                 <Modal open={modalOpen} message={modalMessage} onModalClickCallback={onModalClickCallback}/>
             </Stack>
         </Fragment>
