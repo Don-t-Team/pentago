@@ -23,13 +23,15 @@ const Section = props => {
             item
             sx={{
                 border: "1px solid black",
-                borderRadius: "15px",
-                display: 'flex',
-                flexDirection: 'row',
+                borderRadius: "15%",
                 width: sectionWidth + 'px',
                 height: sectionHeight + 'px',
                 mr: marginRight + 'px',
-                padding: "3.5px"
+                padding: "4px",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center"
                 // mb: marginBottom + 'px'
                 // marginRight: marginRight,
                 // marginBottom: marginBottom

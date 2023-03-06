@@ -358,7 +358,8 @@ export default function Board (props) {
         const numRows = configAttributes.num_rows
         const sectionGap = configAttributes.section_gap
         const sectionBorder = configAttributes.section_border_width * 2
-        return numRows * cellHeight + (numRows - 1) * heightGap + sectionBorder + sectionGap
+        const sectionPadding = configAttributes.section_padding * 2
+        return numRows * cellHeight + (numRows - 1) * heightGap + sectionBorder + sectionGap + sectionPadding
 
     }
 
@@ -369,7 +370,8 @@ export default function Board (props) {
         const numCols = configAttributes.num_columns
         const sectionGap = configAttributes.section_gap
         const sectionBorder = configAttributes.section_border_width * 2
-        return numCols * cellWidth + (numCols - 1) * widthGap + sectionBorder + sectionGap
+        const sectionPadding = configAttributes.section_padding * 2
+        return numCols * cellWidth + (numCols - 1) * widthGap + sectionBorder + sectionGap + sectionPadding
     }
 
     const calcSectionWidth2 = (boardWidth, sectionIdx) => {

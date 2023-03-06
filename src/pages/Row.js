@@ -14,11 +14,12 @@ const Row = props => {
               row="true"
               container 
               columns={configAttributes.num_columns / 2}
-            //   columnGap={1}
+              columnGap={0.5}
               sx={{
                   display: 'flex',
                   flexDirection: 'row',
                   justifyContent: "center",
+                  alignItems: "center",
                   width: width,
                   height: configAttributes.cell_height
               }}
