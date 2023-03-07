@@ -31,7 +31,9 @@ const configAttributes = {
     section_padding: 10,
     board_border_width: 5,
     board_border_color,
-    stack_border_color 
+    stack_border_color,
+    controls_height: 60,
+    button_width: 60,
 }
 
 export default configAttributes

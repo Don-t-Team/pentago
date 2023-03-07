@@ -6,14 +6,6 @@ import Dialog from "@mui/material/Dialog";
 import Backdrop from "@mui/material/Backdrop";
 import styled from "@emotion/styled";
 
-const BackDropComponent = styled(Backdrop, {
-    name: 'MuiModal',
-    slot: 'Backdrop',
-    overridesResolver: (props, styles) => {
-        return styles.backdrop;
-    },
-})({zIndex: -1})
-
 const CustomModal = (props) => {
     const {open, message : initialMessage, onModalClickCallback } = props
 
@@ -30,7 +22,7 @@ const CustomModal = (props) => {
     }
 
     const sections = Array(4).fill().map((_, index) => index)
-    const directions = ["Clockwise", "Counter Clockwise"]
+    const options = ["Clockwise", "Counter Clockwise", "Skip"]
     const textBackground = grey[100]
 
     return (
@@ -55,7 +47,7 @@ const CustomModal = (props) => {
                     <Box
                         sx={{
                             height: "120px",
-                            width: "50%",
+                            width: "60%",
                             position: "absolute",
                             backgroundColor: configAttributes.modal_innerBackground,
                             display: "flex",
@@ -96,7 +88,7 @@ const CustomModal = (props) => {
                                         >
                                             <Box
                                                 sx={{
-                                                    border: "1px solid black",
+                                                    // border: "1px solid black",
                                                     borderRadius: "5px",
                                                     width: "25px",
                                                     height: "25px",
@@ -123,24 +115,25 @@ const CustomModal = (props) => {
                                 }}
                             >
                                 {
-                                    directions.map(direction => (
+                                    options.map(option => (
                                         <Grid
                                             item
-                                            onClick={() => handleDirectionClickCallback(direction)}
+                                            onClick={() => handleDirectionClickCallback(option)}
                                         >
                                             <Box
                                                 sx={{
                                                     marginTop: "10px",
-                                                    border: "1px solid black",
+                                                    // border: "1px solid black",
                                                     borderRadius: "5px",
-                                                    width: "200px",
+                                                    // width: "200px",
                                                     height: "25px",
                                                     textAlign: "center",
                                                     backgroundColor: textBackground
                                                 }}
+                                                xs={4}
                                             >
                                                 <Typography>
-                                                    {direction}
+                                                    {option}
                                                 </Typography>
                                             </Box>
                                         </Grid>   

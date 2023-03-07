@@ -40,28 +40,28 @@ const rollbackState = (phase) => {
 //     return initialBoard
 // }
 
-const getActiveSection = (activeSectionIdx, board) => {
-    if (activeSectionIdx === 0) {
-        const activeRowsIdx = Array(3).fill().map((_, index) => index)
-        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
-        return activeSection
-    }
-    if (activeSectionIdx === 1) {
-        const activeRowsIdx = Array(3).fill().map((_, index) => index)
-        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
-        return activeSection
-    }
-    if (activeSectionIdx === 2) {
-        const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
-        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
-        return activeSection
-    }
-    if (activeSectionIdx === 3) {
-        const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
-        const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
-        return activeSection
-    }
-}
+// const getActiveSection = (activeSectionIdx, board) => {
+//     if (activeSectionIdx === 0) {
+//         const activeRowsIdx = Array(3).fill().map((_, index) => index)
+//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
+//         return activeSection
+//     }
+//     if (activeSectionIdx === 1) {
+//         const activeRowsIdx = Array(3).fill().map((_, index) => index)
+//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
+//         return activeSection
+//     }
+//     if (activeSectionIdx === 2) {
+//         const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
+//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
+//         return activeSection
+//     }
+//     if (activeSectionIdx === 3) {
+//         const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
+//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
+//         return activeSection
+//     }
+// }
 
 // const getSectionIndex = (rowIdx, colIdx) => {
 //     const mid = configAttributes.num_rows / 2
@@ -75,9 +75,9 @@ const getActiveSection = (activeSectionIdx, board) => {
 //         return 3
 // }
 
-const createInitialMoves = () => {
-    return Array(2).fill(true).map(() => [])
-}
+// const createInitialMoves = () => {
+//     return Array(2).fill(true).map(() => [])
+// }
 
 const doWeHaveAWinner = (moves, player, board) => {
     const goalTest = (state) => {
@@ -263,6 +263,26 @@ const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
     }
 }
 
+const isRotateSkippable = (board) => {
+    const totalNumUnoccupiedCells = board.reduce((rotate, section, sectionIdx) => {
+        // rowSums is a array of 3 elements each represent the number of cells in one of the three rows
+        // in a section that are either black or white
+        const rowSums = section.map((row, rowIdx) => row.reduce((sum, cell, colIdx) => {
+            if (cell['color'] === 'black' || cell['color'] === 'white') {
+                return sum += 1
+            }
+            return sum
+        }, 0))
+        const numUnoccupiedCellsInSection = rowSums.reduce((total, rowSum, index) => {
+            return total + rowSum
+        }, 0)
+
+        return numUnoccupiedCellsInSection
+    }, 0)
+
+    return totalNumUnoccupiedCells === 0 || totalNumUnoccupiedCells === 1
+}
+
 export default function Board (props) {
     const states = ["click", "rotate"]
     const [state, dispatch] = useReducer(reducer, initialState)
@@ -360,9 +380,25 @@ export default function Board (props) {
         return { baseHeight: (boardHeight - sectionGap - sectionBorder - boardBorder) / 2, marginBottom: 0 }
     }
 
-    const rotateSection = (sectionIdx, direction) => {
+    const rotateSection = (sectionIdx, option) => {
 
         console.log("rotating section", sectionIdx)
+
+        if (option === "Skip" || isRotateSkippable(board)) {
+            const newPhase = advanceState(phase)
+            const newNextColor = changeColor(nextColor)
+            dispatch({
+                type: "UPDATE STATE AFTER PHASE",
+                newState: {
+                    ...state,
+                    phase: newPhase,
+                    nextColor: newNextColor
+                }
+            })
+            return
+        }
+
+        const direction = option
 
         const activeSection = board[sectionIdx].slice()
         const newMoves = moves.slice()
@@ -549,8 +585,8 @@ export default function Board (props) {
         })
     }
 
-    const onModalClickCallback = (sectionIdx, direction) => {
-        rotateSection(sectionIdx, direction)
+    const onModalClickCallback = (sectionIdx, option) => {
+        rotateSection(sectionIdx, option)
         const newColor = changeColor(nextColor)
 
         dispatch({

@@ -1,24 +1,29 @@
 import { Fragment } from "react"
 import Button from "./Button"
 import { Grid } from "@mui/material"
+import configAttributes from "../config/attributes"
+
+const buttonStyle = {
+    height: "100%",
+    width: configAttributes.button_width
+}
 
 const Controls = (props) => {
-
     const { onRotateCallback, onUndoCallback, showUndoButton } = props
 
     const getButtons = () => {
-        const buttons = ['rotate', 'undo'] 
+        const buttons = ['rotate?', 'undo'] 
         return buttons.map((button, index) => {
             let content
             if (index === 0) {
                 content = 
-                    <Grid item onClick={() => onRotateCallback()} >
+                    <Grid style={buttonStyle} item onClick={() => onRotateCallback()} >
                         <Button text={button} />
                     </Grid>
             }
             else if (showUndoButton) {
                 content = 
-                    <Grid item onClick={() => onUndoCallback()} >
+                    <Grid style={buttonStyle} item onClick={() => onUndoCallback()} >
                         <Button text={button} />
                     </Grid>
             }
@@ -30,7 +35,7 @@ const Controls = (props) => {
         <Grid
             columns={12} 
             sx={{            
-                height: "30px",
+                height: configAttributes.controls_height,
                 width: "100%",
                 display: "flex",
                 flexDirection: "row",
@@ -39,12 +44,6 @@ const Controls = (props) => {
             }}
             container 
             data_class="controllers">
-            {/* <Grid item onClick={() => onRotateCallback()}>
-                <Button text={"rotate"}/>
-            </Grid>
-            <Grid item>
-                <Button text={"enter"} />
-            </Grid> */}
             {
                 getButtons()
             }
