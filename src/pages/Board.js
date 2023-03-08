@@ -7,7 +7,7 @@ import Section from "./Section"
 import Controls from "./Controls"
 
 import configAttributes from "../config/attributes"
-import { rotationNoEffectMessage, nextPhaseMessage } from '../config/messages'
+import { rotationNoEffectMessage, nextPhaseMessage, reportLastActionMessage, reportUndoMessage } from '../config/messages'
 import Modal from '../components/Modal';
 
 import { reducer, initialState } from '../reducers';
@@ -344,7 +344,8 @@ export default function Board (props) {
                 phase: newState,
                 showUndoButton: true,
                 undo: true,
-                topMessage: `${nextColor} clicked block ${sectionIdx + 1}`
+                // topMessage: `${nextColor} clicked block ${sectionIdx + 1}`
+                topMessage: reportLastActionMessage(nextColor, "click", sectionIdx + 1)
             }
         })
     }
@@ -500,7 +501,7 @@ export default function Board (props) {
 
         const newBoard = board.slice()
         const currentPlayer = getCurrentPlayer()
-        const newState = advanceState(phase)
+        const newPhase = advanceState(phase)
 
         newBoard[sectionIdx] = newActiveSection
         const currentPlayerMoves = newMoves[currentPlayer].slice()
@@ -518,14 +519,16 @@ export default function Board (props) {
                 ...state,
                 board: newBoard,
                 moves: newMoves,
-                phase: newState,
+                phase: newPhase,
                 showUndoButton: true,
                 lastRotateSectionIdx: sectionIdx,
                 lastRotateDirection: direction,
                 undo: true,
                 showUndoButton: true,
                 nextColor: newColor,
-                topMessage: `${nextColor} rotated block ${sectionIdx + 1}`
+                // topMessage: `${nextColor} rotated block ${sectionIdx + 1}`
+                topMessage: reportLastActionMessage(nextColor, "rotate", sectionIdx)
+                    + "\n" + nextPhaseMessage(newColor, states[newPhase])
             }
         })
 
@@ -594,7 +597,8 @@ export default function Board (props) {
             newState: {
                 undo: false,
                 showUndoButton: false,
-                topMessage: `${prevColor} undo ${action}`
+                // topMessage: `${prevColor} undo ${action}`
+                topMessage: reportUndoMessage(prevColor, action) 
             }
         })
     }

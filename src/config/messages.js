@@ -20,8 +20,31 @@ const nextPhaseMessage = (nextColor, action) => {
     return `${formattedNextColor} ${formattedAction} next.`
 }
 
-const reportLastActionMessage = (lastColor, action) => {
-    
+const reportLastActionMessage = (lastColor, action, sectionIdx) => {
+    const formattedLastColor = format(lastColor, () => (lastColor.split('').map((char, index) => 
+        index === 0 ? char.toUpperCase() : char
+    ).join('')) ) 
+    const formattedLastAction = format(action, () => (action + 'ed'))  
+
+    return `${formattedLastColor} ${formattedLastAction} block ${sectionIdx}`
 }
 
-export { rotationNoEffectMessage, nextPhaseMessage }
+const reportUndoMessage = (lastColor, action) => {
+    const formattedLastColor = format(lastColor, () => (lastColor.split('').map((char, index) => 
+        index === 0 ? char.toUpperCase() : char
+    ).join('')) ) 
+
+    return `${formattedLastColor} undo ${action}. Click on a new cell.`
+}
+
+
+// const getNextActionMessage = (nextColor, nextAction) => {
+//     const formattedNextColor = format(nextColor, () => (nextColor.split('').map((char, index) => 
+//         index === 0 ? char.toUpperCase() : char
+//     ).join('')))
+//     const formattedNextAction = format(nextAction, () => (nextAction + "s"))
+
+//     return 
+// }
+
+export { rotationNoEffectMessage, nextPhaseMessage, reportLastActionMessage, reportUndoMessage }
