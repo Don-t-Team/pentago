@@ -30,6 +30,7 @@ const initialState = {
     nextColor: 'black',
     winnerColor: null,
     haveAWinner: false,
+    haveADraw: false,
     lastRotateDirection: null,
     lastRotateSectionIdx: null,
     showUndoButton: false,
@@ -72,7 +73,12 @@ const reducer = (state, action) => {
                 winnerColor: newWinner,
             }
         }
-
+        case 'UPDATE DRAW': {
+            return {
+                ...state,
+                haveADraw: true
+            }
+        }
         case 'UPDATE PHASE': {
             const newPhase = action.phase
             return {
@@ -80,19 +86,6 @@ const reducer = (state, action) => {
                 curPhase: newPhase
             }
         }
-        // case 'TOGGLE MODAL OPEN': {
-        //     return {
-        //         ...state,
-        //         modalOpen: !state.modalOpen
-        //     }
-        // }
-        // case 'UPDATE MODAL MESSAGE': {
-        //     const newModalMessage = action.modalMessage
-        //     return {
-        //         ...state,
-        //         modalMessage: newModalMessage
-        //     }
-        // }
 
         case 'UPDATE MODAL' : {
             const { modalOpen, modalMessage } = action

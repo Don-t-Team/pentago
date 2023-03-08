@@ -457,7 +457,7 @@ export default function Board(props) {
         setRotate(false)
         setPick(true)
 
-        console.log("rotated section: ", sectionIdx)
+        // console.log("rotated section: ", sectionIdx)
     }
 
     const onRotateCallback = () => {
@@ -471,8 +471,8 @@ export default function Board(props) {
     }
 
     const onModalClickCallback = (sectionIdx) => {
-        console.log("section to rotate", sectionIdx)
-        console.log("rotating section: ", sectionIdx)
+        // console.log("section to rotate", sectionIdx)
+        // console.log("rotating section: ", sectionIdx)
         rotateSection(sectionIdx)
         setModalOpen(false)
         setModalMessage("")

@@ -227,7 +227,7 @@ const doWeHaveAWinner = (moves, player, board) => {
 
     const mapStateCellsToBoardCells = (state) => {
         return state.map((cell) => {
-            console.log("cell in state", cell)
+            // console.log("cell in state", cell)
             const [sectionIdx, rowIdx, colIdx] = cell
             const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
             return [boardRowIdx, boardColIdx]

@@ -13,8 +13,8 @@ const Section = props => {
     const sectionWidth = baseWidth
     const sectionHeight = baseHeight
 
-    console.log("section", sectionIdx, "section height", sectionHeight + marginBottom)
-    console.log("section", sectionIdx, "section width", sectionWidth + marginRight)
+    // console.log("section", sectionIdx, "section height", sectionHeight + marginBottom)
+    // console.log("section", sectionIdx, "section width", sectionWidth + marginRight)
 
     return (
         <Grid 

@@ -14,10 +14,6 @@ import { reducer, initialState } from '../reducers';
 
 const changeColor = color =>  color === 'white' ? 'black' : 'white';
 
-// const createInitialCell = () => (
-//     { color: "white", isOccupied: false }
-// )
-
 const advanceState = (phase) => {
     return (phase + 1) % 2
 }
@@ -26,63 +22,19 @@ const rollbackState = (phase) => {
     return (phase - 1) < 0 ? 1 : phase - 1
 }
 
-// const createInitialBoard2 = () => {
-//     const createInitalSection = (sectionIdx) => {
-//         const section = Array(configAttributes.num_rows / 2).fill(Array(configAttributes.num_columns / 2).fill(createInitialCell()))
-//         const initialSection = section.map((row, rowIdx) => row.map((col, colIdx) => {
-//             return {...section[rowIdx][colIdx], section: sectionIdx, row: rowIdx, column: colIdx}
-//         }))
-//         return initialSection
-//     }
-
-//     const sectionsIdx = Array(configAttributes.num_sections).fill().map((_, index) => index)
-//     const initialBoard = sectionsIdx.map((idx, _) => createInitalSection(idx))
-
-//     return initialBoard
-// }
-
-// const getActiveSection = (activeSectionIdx, board) => {
-//     if (activeSectionIdx === 0) {
-//         const activeRowsIdx = Array(3).fill().map((_, index) => index)
-//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
-//         return activeSection
-//     }
-//     if (activeSectionIdx === 1) {
-//         const activeRowsIdx = Array(3).fill().map((_, index) => index)
-//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
-//         return activeSection
-//     }
-//     if (activeSectionIdx === 2) {
-//         const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
-//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(0, configAttributes.num_columns / 2))
-//         return activeSection
-//     }
-//     if (activeSectionIdx === 3) {
-//         const activeRowsIdx = Array(3).fill().map((_, index) => index + configAttributes.num_rows / 2)
-//         const activeSection = activeRowsIdx.map(rowIdx => board[activeSectionIdx][rowIdx].slice(configAttributes.num_columns / 2, configAttributes.num_columns))
-//         return activeSection
-//     }
-// }
-
-// const getSectionIndex = (rowIdx, colIdx) => {
-//     const mid = configAttributes.num_rows / 2
-//     if (rowIdx < mid && colIdx < mid) 
-//         return 0
-//     if (rowIdx < mid && colIdx >= mid)
-//         return 1
-//     if (rowIdx >= mid && colIdx < mid)
-//         return 2
-//     if (rowIdx >= mid && colIdx >= mid)
-//         return 3
-// }
-
-// const createInitialMoves = () => {
-//     return Array(2).fill(true).map(() => [])
-// }
+// checks if the player that started the game occupied half of the board
+const checkDraw = (numCurrentPlayerMoves) => {
+    const totalNumAvailMoves = configAttributes.num_rows * configAttributes.num_columns
+    if (numCurrentPlayerMoves === totalNumAvailMoves / 2) {
+        return true
+    }
+    return false
+}
 
 const doWeHaveAWinner = (moves, player, board) => {
     const goalTest = (state) => {
         const diagonalCheck = () => {
+
             const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[0]]))
             const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[1]]))
             
@@ -236,7 +188,6 @@ const doWeHaveAWinner = (moves, player, board) => {
                     : occCols[cell[1]]++
             })
 
-            // need to check for multiple most occurred rows and columns
             const [mostOccRow, occRow] = find(occRows)
             const [mostOccCol, occCol] = find(occCols)
 
@@ -263,7 +214,7 @@ const doWeHaveAWinner = (moves, player, board) => {
 
     const mapStateCellsToBoardCells = (state) => {
         return state.map((cell) => {
-            console.log("cell in state", cell)
+            // console.log("cell in state", cell)
             const [sectionIdx, rowIdx, colIdx] = cell
             const [boardRowIdx, boardColIdx] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
             return [boardRowIdx, boardColIdx]
@@ -297,23 +248,8 @@ const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
     }
 }
 
+// Checks if a section has no cells or only one cell clicked
 const isRotateSkippable = (board, sectionIdx) => {
-    // const totalNumUnoccupiedCells = board.reduce((sum, section, sectionIdx) => {
-    //     // rowSums is a array of 3 elements each represent the number of cells in one of the three rows
-    //     // in a section that are either black or white
-    //     const rowSums = section.map((row, rowIdx) => row.reduce((sum, cell, colIdx) => {
-    //         if (cell['color'] === 'black' || cell['color'] === 'white') {
-    //             return sum += 1
-    //         }
-    //         return sum
-    //     }, 0))
-    //     const numUnoccupiedCellsInSection = rowSums.reduce((total, rowSum, index) => {
-    //         return total + rowSum
-    //     }, 0)
-
-    //     return sum + numUnoccupiedCellsInSection
-    // }, 0)
-
     const section = board[sectionIdx]
     const numUnoccupiedCells = section.reduce((sum, row, rowIdx) => {
         const unOccupiedCellsInRow = row.reduce((sum, cell, colIdx) => {
@@ -333,7 +269,7 @@ export default function Board (props) {
     const states = ["click", "rotate"]
     const [state, dispatch] = useReducer(reducer, initialState)
     const { board, moves, phase, nextColor, winnerColor, haveAWinner,
-        lastRotateDirection, lastRotateSectionIdx, showUndoButton,
+        haveADraw, lastRotateDirection, lastRotateSectionIdx, showUndoButton,
         modalOpen, modalMessage, undo, topMessage } = state
 
     const reset = () => {
@@ -347,7 +283,7 @@ export default function Board (props) {
     )
 
     function onClickCallback(colIdx, rowIdx, sectionIdx) {
-        if( haveAWinner ) {
+        if( haveAWinner || haveADraw ) {
             return;
         }
 
@@ -383,7 +319,7 @@ export default function Board (props) {
         })
     }
 
-    const calcBoardHeight2 = () => {
+    const calcBoardHeight = () => {
         const cellBorder = configAttributes.cell_border_width * 2
         const cellHeight = configAttributes.cell_height + cellBorder
         const heightGap = configAttributes.h_gap
@@ -396,7 +332,7 @@ export default function Board (props) {
 
     }
 
-    const calcBoardWidth2 = () => {
+    const calcBoardWidth = () => {
         const cellBorder = configAttributes.cell_border_width * 2
         const cellWidth = configAttributes.cell_width + cellBorder
         const widthGap = configAttributes.h_gap
@@ -408,7 +344,7 @@ export default function Board (props) {
         return numCols * cellWidth + (numCols - 1) * widthGap + sectionBorder + sectionGap + sectionPadding + boardBorder
     }
 
-    const calcSectionWidth2 = (boardWidth, sectionIdx) => {
+    const calcSectionWidth = (boardWidth, sectionIdx) => {
         const sectionGap = configAttributes.section_gap
         const sectionBorder = configAttributes.section_border_width * 2
         const boardBorder = configAttributes.board_border_width * 2
@@ -418,7 +354,7 @@ export default function Board (props) {
         return { baseWidth: (boardWidth - sectionGap - sectionBorder - boardBorder) / 2, marginRight: 0 }
     }
 
-    const calcSectionHeight2 = (boardHeight, sectionIdx) => {
+    const calcSectionHeight = (boardHeight, sectionIdx) => {
         const sectionGap = configAttributes.section_gap
         const sectionBorder = configAttributes.section_border_width * 2
         const boardBorder = configAttributes.board_border_width * 2
@@ -430,7 +366,7 @@ export default function Board (props) {
 
     const rotateSection = (sectionIdx, option) => {
 
-        console.log("rotating section", sectionIdx)
+        // console.log("rotating section", sectionIdx)
 
         if (option === 'skip' || isRotateSkippable(board, sectionIdx)) {
             const newPhase = advanceState(phase)
@@ -521,13 +457,13 @@ export default function Board (props) {
 
             if (newBlueMoveIdx != null) {
                 newMoves[0][newBlueMoveIdx] = [sectionIdx, newRowIdx, newColIdx]
-                console.log("old blue move", [sectionIdx, oldRowIdx, oldColIdx])
-                console.log("new blue move", [sectionIdx, newRowIdx, newColIdx])
+                // console.log("old blue move", [sectionIdx, oldRowIdx, oldColIdx])
+                // console.log("new blue move", [sectionIdx, newRowIdx, newColIdx])
             }
             if (newRedMoveIdx != null) {
                 newMoves[1][newRedMoveIdx] = [sectionIdx, newRowIdx, newColIdx]
-                console.log("old red move", [sectionIdx, oldRowIdx, oldColIdx])
-                console.log("new red move", [sectionIdx, newRowIdx, newColIdx])                
+                // console.log("old red move", [sectionIdx, oldRowIdx, oldColIdx])
+                // console.log("new red move", [sectionIdx, newRowIdx, newColIdx])                
             }
         }))
 
@@ -567,6 +503,12 @@ export default function Board (props) {
 
         // console.log("rotated section: ", sectionIdx)
         // console.log("new moves", newMoves)
+
+        if (checkDraw(currentPlayerMoves.length)) {
+            dispatch({
+                type: "UPDATE DRAW"
+            })
+        }
     }
 
     const undoClick = () => {
@@ -641,12 +583,6 @@ export default function Board (props) {
             return;
         }
 
-        // dispatch({
-        //     type: 'UPDATE MODAL MESSAGE',
-        //     modalOpen: true,
-        //     modalMessage: "Select a section to rotate"
-        // })
-
         dispatch({
             type: 'UPDATE MODAL',
             modalOpen: true,
@@ -668,11 +604,11 @@ export default function Board (props) {
         })
     }
     
-    const boardwidth = calcBoardWidth2()
-    const boardHeight = calcBoardHeight2()
+    const boardwidth = calcBoardWidth()
+    const boardHeight = calcBoardHeight()
 
-    const sectionWidths = Array(4).fill().map((_, index) => calcSectionWidth2(boardwidth, index))
-    const sectionHeights = Array(4).fill().map((_, index) => calcSectionHeight2(boardHeight, index))
+    const sectionWidths = Array(4).fill().map((_, index) => calcSectionWidth(boardwidth, index))
+    const sectionHeights = Array(4).fill().map((_, index) => calcSectionHeight(boardHeight, index))
 
     return (
         <Fragment>
