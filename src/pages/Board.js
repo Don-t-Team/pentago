@@ -11,7 +11,8 @@ import { rotationNoEffectMessage, nextPhaseMessage, reportLastActionMessage, rep
 import Modal from '../components/Modal';
 
 import { reducer, initialState } from '../reducers';
-import { color } from '@mui/system';
+
+import quicksort from '../functions/Sort';
 
 const changeColor = color =>  color === 'white' ? 'black' : 'white';
 
@@ -34,170 +35,228 @@ const checkDraw = (numCurrentPlayerMoves) => {
 
 const doWeHaveAWinner = (moves, player, board) => {
     const goalTest = (state) => {
+
         // const diagonalCheck = () => {
-
-        const diagonalCheck = () => {
-            const [startRow, startCol] = state[0]
-            let iter = 0
-            let count = 1
-            const numRows = configAttributes.num_rows
-            while (iter < numRows) {
-                const pivotRow = startRow + iter
-                const pivotCol = startCol + iter
-                for (let i = -1; i <= 1; i++) {
-                    if (i !== 0) {
-                        const col = (startCol + iter) * i
-                        let rowDiff = pivotRow - startRow
-                        let colDiff = col - startCol
-                        if (Math.abs(rowDiff) === Math.abs(colDiff)
-                            && board[row][col]['color'] === player) {
-                                count++
-                            }
-
-                        const row = (startRow + iter) * i
-                        rowDiff = row - startRow
-                        colDiff = pivotCol - startCol
-                        if (Math.abs(rowDiff) === Math.abs(colDiff)
-                            && board[row][col]['color'] === player) {
-                            count++
-                        }
-                    }
-                }
-                iter++
-                if (count === 5) {
-                    return true
-                }
-            }
-        }
-
-        //     const winMoves = []
-        //     const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[0]]))
-        //     const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[1]]))
-            
-        //     let start = state[0]
-        //     let curRow = rows[start[0]]
-        //     let curCol = cols[start[1]]
-        //     // counting the start cell itself 
+        //     const [startRow, startCol] = state[0]
+        //     let iter = 0
         //     let count = 1
-
-        //     // top left to bottom right
-        //     while (rows[curRow] != null && cols[curCol] != null) {
-        //         const newRow = curRow + 1
-        //         const newCol = curCol + 1
-        //         curRow = newRow
-        //         curCol = newCol
-        //         if (rows[newRow] && cols[newCol]) {
-        //             count++
-        //             winMoves.push([newRow, newCol])
-        //         }
-        //     }
-
-        //     if (count === 5) {
-        //         const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-        //         const res = temp.reduce((start, move, moveIdx) => {
-        //             if (move[0] === start[0] + 1 && move[1] === start[0] + 1) {
-        //                 return start
+        //     const numRows = configAttributes.num_rows
+        //     while (iter < numRows) {
+        //         const pivotRow = startRow + iter
+        //         const pivotCol = startCol + iter
+        //         if (pivotRow > 0 && pivotRow < configAttributes.num_rows
+        //             && pivotCol > 0 && pivotCol < configAttributes.num_columns) {
+        //             for (let i = -1; i <= 1; i++) {
+        //                 if (i !== 0) {
+        //                     const col = (startCol + iter) * i
+        //                     const row = (startRow + iter) * i
+        //                     let rowDiff = pivotRow - startRow
+        //                     let colDiff = col - startCol
+        //                     if (row > 0 && row < configAttributes.num_rows
+        //                         && col > 0 && col < configAttributes.num_columns) {
+        //                         if (Math.abs(rowDiff) === Math.abs(colDiff)
+        //                             && board[pivotRow][col]['color'] === player) {
+        //                                 count++
+        //                             }
+        //                         rowDiff = row - startRow
+        //                         colDiff = pivotCol - startCol
+        //                         if (Math.abs(rowDiff) === Math.abs(colDiff)
+        //                             && board[row][pivotCol]['color'] === player) {
+        //                             count++
+        //                         }
+        //                     }
+        //                 }
         //             }
-        //             return move
-        //         }, temp[0])
-        //         if (res === temp[0]) {
+        //         }
+        //         iter++
+        //         if (count === 5) {
         //             return true
         //         }
-        //         return false
-        //     }
-
-        //     start = state[0]
-        //     curRow = rows[start[0]]
-        //     curCol = cols[start[1]]
-
-        //     // bottom right to top left
-        //     while (rows[curRow] != null && cols[curCol] != null) {
-        //         const newRow = curRow - 1
-        //         const newCol = curCol - 1
-        //         curRow = newRow
-        //         curCol = newCol
-        //         if (rows[newRow] && cols[newCol]) {
-        //             count++
-        //             winMoves.push([newRow, newCol])
-        //         }
-        //     }
-
-        //     if (count === 5) {
-        //         const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-        //         const res = temp.reduce((start, move, moveIdx) => {
-        //             if (move[0] === start[0] - 1 && move[1] === start[0] + 1) {
-        //                 return start
-        //             }
-        //             return move
-        //         }, temp[0])
-        //         if (res === temp[0]) {
-        //             return true
-        //         }
-        //         return false
-        //     }
-            
-        //     count = 1
-        //     start = state[0]
-        //     curRow = rows[start[0]]
-        //     curCol = cols[start[1]]
-
-        //     // top right to bottom left
-        //     while (rows[curRow] != null && cols[curCol] != null) {
-        //         const newRow = curRow + 1
-        //         const newCol = curCol - 1
-        //         curRow = newRow
-        //         curCol = newCol
-        //         if (rows[newRow] && cols[newCol]) {
-        //             count++
-        //             winMoves.push([newRow, newCol])
-        //         }
-        //     }
-
-            
-        //     if (count === 5) {
-        //         const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-        //         const res = temp.reduce((start, move, moveIdx) => {
-        //             if (move[0] === start[0] - 1 && move[1] === start[0] - 1) {
-        //                 return start
-        //             }
-        //             return move
-        //         }, temp[0])
-        //         if (res === temp[0]) {
-        //             return true
-        //         }
-        //         return false
-        //     }
-
-        //     start = state[0]
-        //     curRow = rows[start[0]]
-        //     curCol = cols[start[1]]
-
-        //     // bottom left to top right
-        //     while (rows[curRow] != null && cols[curCol] != null) {
-        //         const newRow = curRow - 1
-        //         const newCol = curCol + 1
-        //         curRow = newRow
-        //         curCol = newCol
-        //         if (rows[newRow] && cols[newCol]) {
-        //             count++
-        //             winMoves.push([newRow, newCol])
-        //         }
-        //     }
-
-        //     if (count === 5) {
-        //         const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-        //         const res = temp.reduce((start, move, moveIdx) => {
-        //             if (move[0] === start[0] + 1 && move[1] === start[0] - 1) {
-        //                 return start
-        //             }
-        //             return move
-        //         }, temp[0])
-        //         if (res === temp[0]) {
-        //             return true
-        //         }
-        //         return false
         //     }
         // }
+
+        const diagonalCheck = () => {
+
+            const validate = (winMoves) => {
+                const start = winMoves[0]
+                return winMoves.reduce((win, cur, _) => {
+                    if (Math.abs(cur[0] - start[0]) === Math.abs(cur[1] - start[1])) {
+                        return true
+                    }
+                    return false
+                }, false)
+            }
+
+            const check = (direction, curRow, curCol) => {
+                // counting the start cell itself 
+                let count = 1
+                const winMoves = []
+                while (rows[curRow] != null && cols[curCol] != null) {
+                    let iters = [1, -1]
+                    if (direction === "main diagonal") {
+                        for (let iter of iters) {
+                            let newRow = curRow + iter
+                            let newCol = curCol + iter
+                            curRow = newRow
+                            curCol = newCol
+                            if (rows[newRow] && cols[newCol]) {
+                                count++
+                                winMoves.push([newRow, newCol])
+                            }
+                        }
+                    }
+                    else {
+                        for (let iter of iters) {
+                            let newRow = curRow - iter
+                            let newCol = curCol + iter
+                            curRow = newRow
+                            curCol = newCol
+                            if (rows[newRow] && cols[newCol]) {
+                                count++
+                                winMoves.push([newRow, newCol])
+                            }
+                        }
+                    }
+
+                    if (count === 5) {
+                        return validate(winMoves)
+                    }
+                }  
+            }
+
+            const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[0]]))
+            const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[1]]))
+            
+            let start = state[0]
+            let curRow = rows[start[0]]
+            let curCol = cols[start[1]]
+
+            let count = check("main diagonal", curRow, curCol)
+            if (count === 5) {
+                return true
+            }
+            
+            count = check("sub diagonal", curRow, curCol)
+            return count === 5
+
+            // top left to bottom right
+            // while (rows[curRow] != null && cols[curCol] != null) {
+            //     const newRow = curRow + 1
+            //     const newCol = curCol + 1
+            //     curRow = newRow
+            //     curCol = newCol
+            //     if (rows[newRow] && cols[newCol]) {
+            //         count++
+            //         winMoves.push([newRow, newCol])
+            //     }
+            // }
+
+            // if (count === 5) {
+            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+            //     const res = temp.reduce((start, move, moveIdx) => {
+            //         if (move[0] === start[0] + 1 && move[1] === start[0] + 1) {
+            //             return start
+            //         }
+            //         return move
+            //     }, temp[0])
+            //     if (res === temp[0]) {
+            //         return true
+            //     }
+            //     return false
+            // }
+
+            // start = state[0]
+            // curRow = rows[start[0]]
+            // curCol = cols[start[1]]
+
+            // // bottom right to top left
+            // while (rows[curRow] != null && cols[curCol] != null) {
+            //     const newRow = curRow - 1
+            //     const newCol = curCol - 1
+            //     curRow = newRow
+            //     curCol = newCol
+            //     if (rows[newRow] && cols[newCol]) {
+            //         count++
+            //         winMoves.push([newRow, newCol])
+            //     }
+            // }
+
+            // if (count === 5) {
+            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+            //     const res = temp.reduce((start, move, moveIdx) => {
+            //         if (move[0] === start[0] - 1 && move[1] === start[0] + 1) {
+            //             return start
+            //         }
+            //         return move
+            //     }, temp[0])
+            //     if (res === temp[0]) {
+            //         return true
+            //     }
+            //     return false
+            // }
+            
+            // count = 1
+            // start = state[0]
+            // curRow = rows[start[0]]
+            // curCol = cols[start[1]]
+
+            // // top right to bottom left
+            // while (rows[curRow] != null && cols[curCol] != null) {
+            //     const newRow = curRow + 1
+            //     const newCol = curCol - 1
+            //     curRow = newRow
+            //     curCol = newCol
+            //     if (rows[newRow] && cols[newCol]) {
+            //         count++
+            //         winMoves.push([newRow, newCol])
+            //     }
+            // }
+
+            
+            // if (count === 5) {
+            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+            //     const res = temp.reduce((start, move, moveIdx) => {
+            //         if (move[0] === start[0] - 1 && move[1] === start[0] - 1) {
+            //             return start
+            //         }
+            //         return move
+            //     }, temp[0])
+            //     if (res === temp[0]) {
+            //         return true
+            //     }
+            //     return false
+            // }
+
+            // start = state[0]
+            // curRow = rows[start[0]]
+            // curCol = cols[start[1]]
+
+            // // bottom left to top right
+            // while (rows[curRow] != null && cols[curCol] != null) {
+            //     const newRow = curRow - 1
+            //     const newCol = curCol + 1
+            //     curRow = newRow
+            //     curCol = newCol
+            //     if (rows[newRow] && cols[newCol]) {
+            //         count++
+            //         winMoves.push([newRow, newCol])
+            //     }
+            // }
+
+            // if (count === 5) {
+            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+            //     const res = temp.reduce((start, move, moveIdx) => {
+            //         if (move[0] === start[0] + 1 && move[1] === start[0] - 1) {
+            //             return start
+            //         }
+            //         return move
+            //     }, temp[0])
+            //     if (res === temp[0]) {
+            //         return true
+            //     }
+            //     return false
+            // }
+        }
 
         // a helper function for vertical and horizontal goal checks
         const winConditionCheck = (winCondition, mostOccRowOrCol, direction) => {
@@ -313,7 +372,10 @@ const doWeHaveAWinner = (moves, player, board) => {
         })
     } 
 
-    const state = mapStateCellsToBoardCells(moves)
+    let state = mapStateCellsToBoardCells(moves)
+    let newState = state.slice()
+    quicksort(newState, 0, newState.length - 1)
+    // const newBoard = board.map(section => section.map(row => mapStateCellsToBoardCells(row)))
     if (goalTest(state)) {
         console.log("winning state", state)
         return true
