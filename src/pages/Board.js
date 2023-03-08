@@ -7,6 +7,7 @@ import Section from "./Section"
 import Controls from "./Controls"
 
 import configAttributes from "../config/attributes"
+import { rotationNoEffectMessage, nextPhaseMessage } from '../config/messages'
 import Modal from '../components/Modal';
 
 import { reducer, initialState } from '../reducers';
@@ -409,7 +410,7 @@ export default function Board (props) {
                 })
             }
             else {
-                const newPhase = advanceState(phase)
+                // const newPhase = advanceState(phase)
                 dispatch({
                     type: "UPDATE STATE AFTER PHASE",
                     newState: {
@@ -418,7 +419,8 @@ export default function Board (props) {
                         nextColor: newNextColor,
                         undo: false,
                         showUndoButton: false,
-                        topMessage: `Rotation has no effect on block ${sectionIdx + 1}`,
+                        // topMessage: `Rotation has no effect on block ${sectionIdx + 1}`,
+                        topMessage: rotationNoEffectMessage(sectionIdx + 1) + ' ' + nextPhaseMessage(newNextColor, states[newPhase]),
                         lastRotateSectionIdx: sectionIdx,
                         lastRotateDirection: option
                     }
