@@ -263,24 +263,36 @@ const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {
     }
 }
 
-const isRotateSkippable = (board) => {
-    const totalNumUnoccupiedCells = board.reduce((rotate, section, sectionIdx) => {
-        // rowSums is a array of 3 elements each represent the number of cells in one of the three rows
-        // in a section that are either black or white
-        const rowSums = section.map((row, rowIdx) => row.reduce((sum, cell, colIdx) => {
+const isRotateSkippable = (board, sectionIdx) => {
+    // const totalNumUnoccupiedCells = board.reduce((sum, section, sectionIdx) => {
+    //     // rowSums is a array of 3 elements each represent the number of cells in one of the three rows
+    //     // in a section that are either black or white
+    //     const rowSums = section.map((row, rowIdx) => row.reduce((sum, cell, colIdx) => {
+    //         if (cell['color'] === 'black' || cell['color'] === 'white') {
+    //             return sum += 1
+    //         }
+    //         return sum
+    //     }, 0))
+    //     const numUnoccupiedCellsInSection = rowSums.reduce((total, rowSum, index) => {
+    //         return total + rowSum
+    //     }, 0)
+
+    //     return sum + numUnoccupiedCellsInSection
+    // }, 0)
+
+    const section = board[sectionIdx]
+    const numUnoccupiedCells = section.reduce((sum, row, rowIdx) => {
+        const unOccupiedCellsInRow = row.reduce((sum, cell, colIdx) => {
             if (cell['color'] === 'black' || cell['color'] === 'white') {
                 return sum += 1
             }
             return sum
-        }, 0))
-        const numUnoccupiedCellsInSection = rowSums.reduce((total, rowSum, index) => {
-            return total + rowSum
         }, 0)
+        return sum + unOccupiedCellsInRow
 
-        return numUnoccupiedCellsInSection
     }, 0)
 
-    return totalNumUnoccupiedCells === 0 || totalNumUnoccupiedCells === 1
+    return numUnoccupiedCells === 0 || numUnoccupiedCells === 1
 }
 
 export default function Board (props) {
@@ -288,7 +300,7 @@ export default function Board (props) {
     const [state, dispatch] = useReducer(reducer, initialState)
     const { board, moves, phase, nextColor, winnerColor, haveAWinner,
         lastRotateDirection, lastRotateSectionIdx, showUndoButton,
-        modalOpen, modalMessage, undo } = state
+        modalOpen, modalMessage, undo, topMessage } = state
 
     const reset = () => {
         dispatch({
@@ -330,7 +342,8 @@ export default function Board (props) {
                 moves: newMoves,
                 phase: newState,
                 showUndoButton: true,
-                undo: true
+                undo: true,
+                topMessage: `${nextColor} clicked block ${sectionIdx + 1}`
             }
         })
     }
@@ -384,17 +397,33 @@ export default function Board (props) {
 
         console.log("rotating section", sectionIdx)
 
-        if (option === "Skip" || isRotateSkippable(board)) {
+        if (isRotateSkippable(board, sectionIdx)) {
             const newPhase = advanceState(phase)
             const newNextColor = changeColor(nextColor)
-            dispatch({
-                type: "UPDATE STATE AFTER PHASE",
-                newState: {
-                    ...state,
-                    phase: newPhase,
-                    nextColor: newNextColor
-                }
-            })
+            const currentPlayer = getCurrentPlayer()
+            const currentPlayerMoves = moves[currentPlayer].slice()
+            if (currentPlayerMoves.length >= 5 && doWeHaveAWinner(currentPlayerMoves, nextColor, board)) {
+                dispatch({
+                    type: "UPDATE WINNER",
+                    winnerColor: nextColor
+                })
+            }
+            else {
+                const newPhase = advanceState(phase)
+                dispatch({
+                    type: "UPDATE STATE AFTER PHASE",
+                    newState: {
+                        ...state,
+                        phase: newPhase,
+                        nextColor: newNextColor,
+                        undo: false,
+                        showUndoButton: false,
+                        topMessage: `Rotation has no effect on block ${sectionIdx + 1}`,
+                        lastRotateSectionIdx: sectionIdx,
+                        lastRotateDirection: option
+                    }
+                })
+            }
             return
         }
 
@@ -481,16 +510,6 @@ export default function Board (props) {
             })
         }
 
-        // setBoard(newBoard)
-        // setMoves(newMoves)
-        // setphase(newState)
-        // setShowUndoButton(true)
-        // setLastRotateSectionIdx(sectionIdx)
-        // setLastRotateDirection(direction)
-        // setUndo(true)
-        // setShowUndoButton(true)
-        // setNextColor(newColor)
-
         dispatch({
             type: "UPDATE STATE AFTER PHASE",
             newState: {
@@ -503,7 +522,8 @@ export default function Board (props) {
                 lastRotateDirection: direction,
                 undo: true,
                 showUndoButton: true,
-                nextColor: newColor
+                nextColor: newColor,
+                topMessage: `${nextColor} rotated block ${sectionIdx + 1}`
             }
         })
 
@@ -519,7 +539,7 @@ export default function Board (props) {
         const prevBoard = board.map((section, sectionIdx) => section.map((row, rowIdx) => row.map((cell, colIdx) => {
             if (sectionIdx === lastSectionIdx && rowIdx === lastRowIdx && colIdx === lastColIdx) {
                 const newCell = {...cell}
-                newCell["color"] = "white"
+                newCell["color"] = configAttributes.cellBackground
                 newCell["isOccupied"] = false
                 return newCell
             }
@@ -551,24 +571,28 @@ export default function Board (props) {
             return
         }
 
+        let action = ""
+        const prevColor = changeColor(nextColor)
+
         const prevState = rollbackState(phase)
         if (states[prevState] === "click") {
             undoClick()
-            // const prevState = rollbackState(phase)
-            // setphase(prevState)
+            action = "click"
 
         }
         else if (states[prevState] === "rotate") {
             // don't need to roll back state because a rotation moves to the next state
             // which is also the previous state
             undoRotate()
+            action = "rotate"
         }
 
         dispatch({
             type: "UPDATE STATE AFTER PHASE",
             newState: {
                 undo: false,
-                showUndoButton: false
+                showUndoButton: false,
+                topMessage: `${prevColor} undo ${action}`
             }
         })
     }
@@ -578,10 +602,16 @@ export default function Board (props) {
             return;
         }
 
+        // dispatch({
+        //     type: 'UPDATE MODAL MESSAGE',
+        //     modalOpen: true,
+        //     modalMessage: "Select a section to rotate"
+        // })
+
         dispatch({
-            type: 'UPDATE MESSAGE CENTER',
+            type: 'UPDATE MODAL',
             modalOpen: true,
-            modalMessage: "Select a section to rotate"
+            modalMessage: 'Select a section to rotate'
         })
     }
 
@@ -626,7 +656,9 @@ export default function Board (props) {
                             winnerColor={winnerColor}
                             haveAWinner={haveAWinner}
                             phase={states[phase]}
-                            reset={reset} />
+                            reset={reset}
+                            topMessage={topMessage}
+                            />
                 {
                     <Grid 
                         data_class={"board"}

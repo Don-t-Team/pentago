@@ -34,9 +34,10 @@ const initialState = {
     lastRotateSectionIdx: null,
     showUndoButton: false,
     modalOpen: false,
-    modalMessage: '',
+    modalMessage: "",
     undo: false,
     modalOpen: false,
+    topMessage: "Black clicks next",
 }
 
 const reducer = (state, action) => {
@@ -68,7 +69,7 @@ const reducer = (state, action) => {
             return {
                 ...state,
                 haveAWinner: true,
-                winnerColor: newWinner
+                winnerColor: newWinner,
             }
         }
 
@@ -79,19 +80,29 @@ const reducer = (state, action) => {
                 curPhase: newPhase
             }
         }
-        case 'TOGGLE MODAL OPEN': {
+        // case 'TOGGLE MODAL OPEN': {
+        //     return {
+        //         ...state,
+        //         modalOpen: !state.modalOpen
+        //     }
+        // }
+        // case 'UPDATE MODAL MESSAGE': {
+        //     const newModalMessage = action.modalMessage
+        //     return {
+        //         ...state,
+        //         modalMessage: newModalMessage
+        //     }
+        // }
+
+        case 'UPDATE MODAL' : {
+            const { modalOpen, modalMessage } = action
             return {
                 ...state,
-                modalOpen: !state.modalOpen
+                modalOpen: modalOpen != null ? modalOpen : state.modalOpen,
+                modalMessage: modalMessage != null ? modalMessage : state.modalMessage
             }
         }
-        case 'UPDATE MODAL MESSAGE': {
-            const newModalMessage = action.modalMessage
-            return {
-                ...state,
-                modalMessage: newModalMessage
-            }
-        }
+
         case 'UPDATE NEXT COLOR': {
             const newNextColor = action.nextColor
             return {
@@ -119,7 +130,7 @@ const reducer = (state, action) => {
                 lastRotateSectionIdx: newLastRotateSectionIdx
             }
         }
-        case 'UPDATE MESSAGE CENTER': {
+        case 'UPDATE TOP MESSAGE': {
             const newModalOpen = action.modalOpen
             const newModalMessage = action.modalMessage
             return {

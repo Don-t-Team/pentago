@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 
 const TopMessage = (props) => {
 
-    const { haveAWinner, nextColor, winnerColor, phase, reset } = props
+    const { haveAWinner, nextColor, winnerColor, phase, reset, topMessage } = props
 
     if(!haveAWinner) {
         // ? = is it defined
@@ -13,7 +13,8 @@ const TopMessage = (props) => {
                     sx={{display: 'flex', flexDirection: 'column', height: 100, alignContent: 'center'}}
                >
                     <Typography variant='h5' textAlign='center'>
-                      {playerColor} {phase}s next
+                      {/* {playerColor} {phase}s next */}
+                      {topMessage}
                     </Typography>
             </Box>;
     }

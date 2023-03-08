@@ -2,9 +2,6 @@ import { useState } from "react";
 import { Box, Typography, Grid, Modal } from "@mui/material";
 import grey from "@mui/material/colors/grey"
 import configAttributes from "../config/attributes";
-import Dialog from "@mui/material/Dialog";
-import Backdrop from "@mui/material/Backdrop";
-import styled from "@emotion/styled";
 
 const CustomModal = (props) => {
     const {open, message : initialMessage, onModalClickCallback } = props
@@ -21,8 +18,8 @@ const CustomModal = (props) => {
         onModalClickCallback(rotateSection, direction)
     }
 
-    const sections = Array(4).fill().map((_, index) => index)
-    const options = ["Clockwise", "Counter Clockwise", "Skip"]
+    const sections = Array(4).fill().map((_, index) => index + 1)
+    const options = ["Clockwise", "Counter Clockwise"]
     const textBackground = grey[100]
 
     return (
@@ -84,7 +81,7 @@ const CustomModal = (props) => {
                                     sections.map((section, idx) => (
                                         <Grid 
                                             item
-                                            onClick={() => handleSectionClickCallback(idx)}
+                                            onClick={() => handleSectionClickCallback(section - 1)}
                                         >
                                             <Box
                                                 sx={{

@@ -1,4 +1,3 @@
-import { Fragment } from "react"
 import Button from "./Button"
 import { Grid } from "@mui/material"
 import configAttributes from "../config/attributes"
