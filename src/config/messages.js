@@ -21,10 +21,15 @@ const nextPhaseMessage = (nextColor, action) => {
 }
 
 const reportLastActionMessage = (lastColor, action, sectionIdx) => {
-    const formattedLastColor = format(lastColor, () => (lastColor.split('').map((char, index) => 
-        index === 0 ? char.toUpperCase() : char
-    ).join('')) ) 
-    const formattedLastAction = format(action, () => (action + 'ed'))  
+    let formattedLastColor = format(lastColor, () => (lastColor.split('').map((char, index) => {
+        if (index === 0 )
+            return char.toUpperCase()
+        return char 
+    }).join('')))
+
+    const formattedLastAction = format(action, () => (
+        action[action.length - 1] === 'e' ? action + 'd' : action + 'ed'
+    ))  
 
     return `${formattedLastColor} ${formattedLastAction} block ${sectionIdx}.`
 }

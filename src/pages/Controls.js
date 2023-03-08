@@ -11,6 +11,7 @@ const Controls = (props) => {
     const { phase, onRotateCallback, onUndoCallback, showUndoButton } = props
 
     const getButtons = () => {
+        if (phase !== 'rotate') return
         const buttons = ['rotate?', 'undo'] 
         return buttons.map((button, index) => {
             let content
@@ -31,24 +32,22 @@ const Controls = (props) => {
     }
 
     return (
-             phase == 'rotate' &&
-                <Grid
-                    columns={12} 
-                    sx={{            
-                        height: configAttributes.controls_height,
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-evenly",
-                        marginTop: "50px"
-                    }}
-                    container 
-                    data_class="controllers">
-                    {
-                        getButtons()
-                    }
-                </Grid>
-        
+        <Grid
+            columns={12} 
+            sx={{            
+                height: configAttributes.controls_height,
+                width: "100%",
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+                marginTop: "50px"
+            }}
+            container 
+            data_class="controllers">
+            {
+                getButtons()
+            }
+        </Grid>     
     )
 }
 
