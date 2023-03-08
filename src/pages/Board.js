@@ -34,7 +34,7 @@ const checkDraw = (numCurrentPlayerMoves) => {
 const doWeHaveAWinner = (moves, player, board) => {
     const goalTest = (state) => {
         const diagonalCheck = () => {
-
+            const winMoves = []
             const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[0]]))
             const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[1]]))
             
@@ -50,8 +50,24 @@ const doWeHaveAWinner = (moves, player, board) => {
                 const newCol = curCol + 1
                 curRow = newRow
                 curCol = newCol
-                if (rows[newRow] && cols[newCol])
+                if (rows[newRow] && cols[newCol]) {
                     count++
+                    winMoves.push([newRow, newCol])
+                }
+            }
+
+            if (count === 5) {
+                const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+                const res = temp.reduce((start, move, moveIdx) => {
+                    if (move[0] === start[0] + 1 && move[1] === start[0] + 1) {
+                        return start
+                    }
+                    return move
+                }, temp[0])
+                if (res === temp[0]) {
+                    return true
+                }
+                return false
             }
 
             start = state[0]
@@ -64,12 +80,25 @@ const doWeHaveAWinner = (moves, player, board) => {
                 const newCol = curCol - 1
                 curRow = newRow
                 curCol = newCol
-                if (rows[newRow] && cols[newCol])
+                if (rows[newRow] && cols[newCol]) {
                     count++
+                    winMoves.push([newRow, newCol])
+                }
             }
 
-            if (count === 5)
-                return true
+            if (count === 5) {
+                const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+                const res = temp.reduce((start, move, moveIdx) => {
+                    if (move[0] === start[0] - 1 && move[1] === start[0] + 1) {
+                        return start
+                    }
+                    return move
+                }, temp[0])
+                if (res === temp[0]) {
+                    return true
+                }
+                return false
+            }
             
             count = 1
             start = state[0]
@@ -82,13 +111,26 @@ const doWeHaveAWinner = (moves, player, board) => {
                 const newCol = curCol - 1
                 curRow = newRow
                 curCol = newCol
-                if (rows[newRow] && cols[newCol])
+                if (rows[newRow] && cols[newCol]) {
                     count++
+                    winMoves.push([newRow, newCol])
+                }
             }
 
             
-            if (count === 5)
-                return true
+            if (count === 5) {
+                const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+                const res = temp.reduce((start, move, moveIdx) => {
+                    if (move[0] === start[0] - 1 && move[1] === start[0] - 1) {
+                        return start
+                    }
+                    return move
+                }, temp[0])
+                if (res === temp[0]) {
+                    return true
+                }
+                return false
+            }
 
             start = state[0]
             curRow = rows[start[0]]
@@ -100,11 +142,25 @@ const doWeHaveAWinner = (moves, player, board) => {
                 const newCol = curCol + 1
                 curRow = newRow
                 curCol = newCol
-                if (rows[newRow] && cols[newCol])
+                if (rows[newRow] && cols[newCol]) {
                     count++
+                    winMoves.push([newRow, newCol])
+                }
             }
 
-            return count === 5
+            if (count === 5) {
+                const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
+                const res = temp.reduce((start, move, moveIdx) => {
+                    if (move[0] === start[0] + 1 && move[1] === start[0] - 1) {
+                        return start
+                    }
+                    return move
+                }, temp[0])
+                if (res === temp[0]) {
+                    return true
+                }
+                return false
+            }
         }
 
         // a helper function for vertical and horizontal goal checks
