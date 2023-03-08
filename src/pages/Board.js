@@ -68,7 +68,7 @@ const doWeHaveAWinner = (moves, player, board) => {
                     count++
             }
 
-            if (count >= 5)
+            if (count === 5)
                 return true
             
             count = 1
@@ -87,7 +87,7 @@ const doWeHaveAWinner = (moves, player, board) => {
             }
 
             
-            if (count >= 5)
+            if (count === 5)
                 return true
 
             start = state[0]
@@ -104,7 +104,7 @@ const doWeHaveAWinner = (moves, player, board) => {
                     count++
             }
 
-            return count >= 5
+            return count === 5
         }
 
         // a helper function for vertical and horizontal goal checks

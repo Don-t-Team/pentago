@@ -76,7 +76,8 @@ const reducer = (state, action) => {
         case 'UPDATE DRAW': {
             return {
                 ...state,
-                haveADraw: true
+                haveADraw: true,
+                topMessage: "Draw"
             }
         }
         case 'UPDATE PHASE': {
@@ -142,7 +143,11 @@ const reducer = (state, action) => {
             }
         }
         case 'RESET GAME': {
-            return {...initialState}
+            return {
+                ...initialState,
+                board: createInitialBoard(),
+                moves: createInitialMoves()
+            }
         }
     }
 }
