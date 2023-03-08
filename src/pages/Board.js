@@ -397,7 +397,7 @@ export default function Board (props) {
 
         console.log("rotating section", sectionIdx)
 
-        if (isRotateSkippable(board, sectionIdx)) {
+        if (option === 'skip' || isRotateSkippable(board, sectionIdx)) {
             const newPhase = advanceState(phase)
             const newNextColor = changeColor(nextColor)
             const currentPlayer = getCurrentPlayer()
@@ -572,19 +572,19 @@ export default function Board (props) {
         }
 
         let action = ""
-        const prevColor = changeColor(nextColor)
-
+        const prevColor = nextColor
         const prevState = rollbackState(phase)
+
         if (states[prevState] === "click") {
             undoClick()
             action = "click"
-
         }
         else if (states[prevState] === "rotate") {
             // don't need to roll back state because a rotation moves to the next state
             // which is also the previous state
             undoRotate()
             action = "rotate"
+            prevColor = changeColor(nextColor)
         }
 
         dispatch({

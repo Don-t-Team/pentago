@@ -19,7 +19,7 @@ const CustomModal = (props) => {
     }
 
     const sections = Array(4).fill().map((_, index) => index + 1)
-    const options = ["Clockwise", "Counter Clockwise"]
+    const options = ["Clockwise", "Counter Clockwise", 'skip']
     const textBackground = grey[100]
 
     return (
