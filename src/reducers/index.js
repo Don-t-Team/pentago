@@ -1,4 +1,29 @@
 import configAttributes from '../config/attributes'
+import testBoards from '../tests'
+
+const getStartColorAndMoves = (board) => {
+    const calcOccupiedCellsByColor = (color) => (
+        board.reduce((sum, section, sectionIdx) => {
+            const sectionSum = section.reduce((sum, row, rowIdx) => {
+                const rowSum = row.reduce((sum, cell, colIdx) => {
+                    if (cell['color'] === color) {
+                        const player = color === 'black' ? 0 : 1    
+                        moves[player].push([sectionIdx, rowIdx, colIdx])
+                        return sum + 1
+                    }
+                    return sum
+                }, 0)
+                return sum + rowSum
+            }, 0)
+            return sum + sectionSum
+        }, 0)
+    )
+    const moves = createInitialMoves()
+    const blackColorsOccupied = calcOccupiedCellsByColor('black')
+    const whiteColorsOccupied = calcOccupiedCellsByColor('white')
+
+    return [blackColorsOccupied >= whiteColorsOccupied ? 'black' : 'white', moves]
+}
 
 const createInitialBoard = () => {
     const createInitalSection = (sectionIdx) => {
@@ -23,11 +48,16 @@ const createInitialMoves = () => {
     return Array(2).fill(true).map(() => [])
 }
 
+const testBoard = testBoards[0]
+const [startPlayer, startMoves] = getStartColorAndMoves(testBoard)
+
 const initialState = {
-    board: createInitialBoard(),
-    moves: createInitialMoves(),
+    // board: createInitialBoard(),
+    board: testBoard,
+    // moves: createInitialMoves(),
+    moves: startMoves,
     phase: 0,
-    nextColor: 'black',
+    nextColor: startPlayer,
     winnerColor: null,
     haveAWinner: false,
     haveADraw: false,
@@ -38,7 +68,7 @@ const initialState = {
     modalMessage: "",
     undo: false,
     modalOpen: false,
-    topMessage: "Black clicks next",
+    topMessage: ` ${startPlayer} clicks next`,
 }
 
 const reducer = (state, action) => {
