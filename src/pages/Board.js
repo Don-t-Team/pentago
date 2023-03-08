@@ -88,9 +88,11 @@ const doWeHaveAWinner = (moves, player, board) => {
             
             let start = state[0]
             let curRow = rows[start[0]]
-            let curCol = cols[start[0]]
+            let curCol = cols[start[1]]
             // counting the start cell itself 
             let count = 1
+
+            // top left to bottom right
             while (rows[curRow] != null && cols[curCol] != null) {
                 const newRow = curRow + 1
                 const newCol = curCol + 1
@@ -100,13 +102,11 @@ const doWeHaveAWinner = (moves, player, board) => {
                     count++
             }
 
-            if (count >= 5)
-                return true
-
             start = state[0]
             curRow = rows[start[0]]
-            curCol = cols[start[0]]
+            curCol = cols[start[1]]
 
+            // bottom right to top left
             while (rows[curRow] != null && cols[curCol] != null) {
                 const newRow = curRow - 1
                 const newCol = curCol - 1
@@ -118,8 +118,41 @@ const doWeHaveAWinner = (moves, player, board) => {
 
             if (count >= 5)
                 return true
+            
+            count = 1
+            start = state[0]
+            curRow = rows[start[0]]
+            curCol = cols[start[1]]
 
-            return false
+            // top right to bottom left
+            while (rows[curRow] != null && cols[curCol] != null) {
+                const newRow = curRow + 1
+                const newCol = curCol - 1
+                curRow = newRow
+                curCol = newCol
+                if (rows[newRow] && cols[newCol])
+                    count++
+            }
+
+            
+            if (count >= 5)
+                return true
+
+            start = state[0]
+            curRow = rows[start[0]]
+            curCol = cols[start[1]]
+
+            // bottom left to top right
+            while (rows[curRow] != null && cols[curCol] != null) {
+                const newRow = curRow - 1
+                const newCol = curCol + 1
+                curRow = newRow
+                curCol = newCol
+                if (rows[newRow] && cols[newCol])
+                    count++
+            }
+
+            return count >= 5
         }
 
         // a helper function for vertical and horizontal goal checks
@@ -510,6 +543,7 @@ export default function Board (props) {
                 type: 'UPDATE WINNER',
                 winnerColor: nextColor
             })
+            return
         }
 
         dispatch({
