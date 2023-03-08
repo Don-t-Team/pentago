@@ -7,7 +7,7 @@ const format = (object, formatter) => {
 }
 
 const rotationNoEffectMessage = (sectionIdx) => (
-    `Rotation has no effect on block ${sectionIdx}.`
+    `Rotation is not applicable on block ${sectionIdx}.`
 )
 
 const nextPhaseMessage = (nextColor, action) => {
@@ -26,7 +26,7 @@ const reportLastActionMessage = (lastColor, action, sectionIdx) => {
     ).join('')) ) 
     const formattedLastAction = format(action, () => (action + 'ed'))  
 
-    return `${formattedLastColor} ${formattedLastAction} block ${sectionIdx}`
+    return `${formattedLastColor} ${formattedLastAction} block ${sectionIdx}.`
 }
 
 const reportUndoMessage = (lastColor, action) => {

@@ -8,7 +8,7 @@ const buttonStyle = {
 }
 
 const Controls = (props) => {
-    const { onRotateCallback, onUndoCallback, showUndoButton } = props
+    const { phase, onRotateCallback, onUndoCallback, showUndoButton } = props
 
     const getButtons = () => {
         const buttons = ['rotate?', 'undo'] 
@@ -31,22 +31,24 @@ const Controls = (props) => {
     }
 
     return (
-        <Grid
-            columns={12} 
-            sx={{            
-                height: configAttributes.controls_height,
-                width: "100%",
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-evenly",
-                marginTop: "50px"
-            }}
-            container 
-            data_class="controllers">
-            {
-                getButtons()
-            }
-        </Grid>
+             phase == 'rotate' &&
+                <Grid
+                    columns={12} 
+                    sx={{            
+                        height: configAttributes.controls_height,
+                        width: "100%",
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-evenly",
+                        marginTop: "50px"
+                    }}
+                    container 
+                    data_class="controllers">
+                    {
+                        getButtons()
+                    }
+                </Grid>
+        
     )
 }
 

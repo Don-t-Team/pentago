@@ -411,7 +411,6 @@ export default function Board (props) {
                 })
             }
             else {
-                // const newPhase = advanceState(phase)
                 dispatch({
                     type: "UPDATE STATE AFTER PHASE",
                     newState: {
@@ -527,7 +526,7 @@ export default function Board (props) {
                 showUndoButton: true,
                 nextColor: newColor,
                 // topMessage: `${nextColor} rotated block ${sectionIdx + 1}`
-                topMessage: reportLastActionMessage(nextColor, "rotate", sectionIdx)
+                topMessage: reportLastActionMessage(nextColor, "rotate", sectionIdx + 1)
                     + "\n" + nextPhaseMessage(newColor, states[newPhase])
             }
         })
@@ -696,7 +695,7 @@ export default function Board (props) {
                         }
                     </Grid>
                 }
-                <Controls onRotateCallback={onRotateCallback} showUndoButton={showUndoButton} onUndoCallback={onUndoCallback}/>
+                <Controls phase={states[phase]} onRotateCallback={onRotateCallback} showUndoButton={showUndoButton} onUndoCallback={onUndoCallback}/>
                 <Modal open={modalOpen} message={modalMessage} onModalClickCallback={onModalClickCallback}/>
             </Stack>
         </Fragment>
