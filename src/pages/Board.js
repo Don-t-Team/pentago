@@ -36,214 +36,25 @@ const checkDraw = (numCurrentPlayerMoves) => {
 
 const doWeHaveAWinner = (moves, player, board) => {
     const goalTest = (state, board) => {
-
-        // const diagonalCheck = () => {
-
-        //     const validate = (winMoves) => {
-        //         const start = winMoves[0]
-        //         return winMoves.reduce((win, cur, _) => {
-        //             if (Math.abs(cur[0] - start[0]) === Math.abs(cur[1] - start[1])) {
-        //                 return true
-        //             }
-        //             return false
-        //         }, false)
-        //     }
-
-        //     const check = (direction, startRow, startCol) => {
-        //         // counting the start cell itself 
-        //         let count = 1
-        //         const winMoves = []
-        //         let iter = 1
-        //         while (rows[curRow] != null && cols[curCol] != null) {
-        //             let iters = [iter, -iter]
-        //             if (direction === "main diagonal") {
-        //                 for (let i of iters) {
-        //                     let newRow = startRow + i
-        //                     let newCol = startCol + i
-        //                     curRow = newRow
-        //                     curCol = newCol
-        //                     if (rows[newRow] === newCol && cols[newCol] === newRow) {
-        //                         count++
-        //                         winMoves.push([newRow, newCol])
-        //                     }
-        //                 }
-        //             }
-        //             else {
-        //                 for (let iter of iters) {
-        //                     let newRow = curRow - iter
-        //                     let newCol = curCol + iter
-        //                     curRow = newRow
-        //                     curCol = newCol
-        //                     if (rows[newRow] === newCol && cols[newCol] === newRow) {
-        //                         count++
-        //                         winMoves.push([newRow, newCol])
-        //                     }
-        //                 }
-        //             }
-
-        //             if (count === 5) {
-        //                 return validate(winMoves)
-        //             }
-        //             iter++
-        //         }  
-        //         return count
-        //     }
-
-        //     const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[1]]))
-        //     const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[0]]))
-            
-        //     let start = state[0]
-        //     let curRow = rows[start[0]]
-        //     let curCol = cols[start[1]]
-
-        //     let count = check("main diagonal", curRow, curCol)
-        //     if (count === 5) {
-        //         return true
-        //     }
-            
-        //     count = check("sub diagonal", curRow, curCol)
-        //     return count === 5
-
-            // top left to bottom right
-            // while (rows[curRow] != null && cols[curCol] != null) {
-            //     const newRow = curRow + 1
-            //     const newCol = curCol + 1
-            //     curRow = newRow
-            //     curCol = newCol
-            //     if (rows[newRow] && cols[newCol]) {
-            //         count++
-            //         winMoves.push([newRow, newCol])
-            //     }
-            // }
-
-            // if (count === 5) {
-            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-            //     const res = temp.reduce((start, move, moveIdx) => {
-            //         if (move[0] === start[0] + 1 && move[1] === start[0] + 1) {
-            //             return start
-            //         }
-            //         return move
-            //     }, temp[0])
-            //     if (res === temp[0]) {
-            //         return true
-            //     }
-            //     return false
-            // }
-
-            // start = state[0]
-            // curRow = rows[start[0]]
-            // curCol = cols[start[1]]
-
-            // // bottom right to top left
-            // while (rows[curRow] != null && cols[curCol] != null) {
-            //     const newRow = curRow - 1
-            //     const newCol = curCol - 1
-            //     curRow = newRow
-            //     curCol = newCol
-            //     if (rows[newRow] && cols[newCol]) {
-            //         count++
-            //         winMoves.push([newRow, newCol])
-            //     }
-            // }
-
-            // if (count === 5) {
-            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-            //     const res = temp.reduce((start, move, moveIdx) => {
-            //         if (move[0] === start[0] - 1 && move[1] === start[0] + 1) {
-            //             return start
-            //         }
-            //         return move
-            //     }, temp[0])
-            //     if (res === temp[0]) {
-            //         return true
-            //     }
-            //     return false
-            // }
-            
-            // count = 1
-            // start = state[0]
-            // curRow = rows[start[0]]
-            // curCol = cols[start[1]]
-
-            // // top right to bottom left
-            // while (rows[curRow] != null && cols[curCol] != null) {
-            //     const newRow = curRow + 1
-            //     const newCol = curCol - 1
-            //     curRow = newRow
-            //     curCol = newCol
-            //     if (rows[newRow] && cols[newCol]) {
-            //         count++
-            //         winMoves.push([newRow, newCol])
-            //     }
-            // }
-
-            
-            // if (count === 5) {
-            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-            //     const res = temp.reduce((start, move, moveIdx) => {
-            //         if (move[0] === start[0] - 1 && move[1] === start[0] - 1) {
-            //             return start
-            //         }
-            //         return move
-            //     }, temp[0])
-            //     if (res === temp[0]) {
-            //         return true
-            //     }
-            //     return false
-            // }
-
-            // start = state[0]
-            // curRow = rows[start[0]]
-            // curCol = cols[start[1]]
-
-            // // bottom left to top right
-            // while (rows[curRow] != null && cols[curCol] != null) {
-            //     const newRow = curRow - 1
-            //     const newCol = curCol + 1
-            //     curRow = newRow
-            //     curCol = newCol
-            //     if (rows[newRow] && cols[newCol]) {
-            //         count++
-            //         winMoves.push([newRow, newCol])
-            //     }
-            // }
-
-            // if (count === 5) {
-            //     const temp = moves.sort((m1, m2) => (m1[0] < m2[0]))
-            //     const res = temp.reduce((start, move, moveIdx) => {
-            //         if (move[0] === start[0] + 1 && move[1] === start[0] - 1) {
-            //             return start
-            //         }
-            //         return move
-            //     }, temp[0])
-            //     if (res === temp[0]) {
-            //         return true
-            //     }
-            //     return false
-            // }
-        // }
-
             const diagonalCheck = (board, player) => {
-                // const [startRow, startCol] = state[0]
+                const conditionCheck = (curRow, curCol) => (
+                    curRow >= 0 && curRow < configAttributes.num_rows
+                        && curCol >= 0 && curCol < configAttributes.num_columns
+                        && board[curRow][curCol]['color'] === player
+                )
 
                 const mainDiagonalCheck = (startRow, startCol) => {
                     let count = 1
                     let curRow = startRow + 1
                     let curCol = startCol + 1
-                    while(curRow >= 0 && curRow < configAttributes.num_rows
-                        && curCol >= 0 && curCol < configAttributes.num_columns
-                        && board[curRow][curCol]['color'] === player
-                        ) {
+                    while(conditionCheck(curRow, curCol)) {
                             count++
                             curRow++
                             curCol++
                     }
                     curRow = startRow - 1
                     curCol = startCol - 1
-                    while(curRow >= 0 && curRow < configAttributes.num_rows
-                        && curCol >= 0 && curCol < configAttributes.num_columns
-                        && board[curRow][curCol]['color'] === player
-                        ) {
+                    while(conditionCheck(curRow, curCol)) {
                             count++
                             curRow--
                             curCol--
@@ -255,20 +66,14 @@ const doWeHaveAWinner = (moves, player, board) => {
                     let count = 1
                     let curRow = startRow + 1
                     let curCol = startCol - 1
-                    while(curRow >= 0 && curRow < configAttributes.num_rows
-                        && curCol >= 0 && curCol < configAttributes.num_columns
-                        && board[curRow][curCol]['color'] === player
-                        ) {
+                    while(conditionCheck(curRow, curCol)) {
                             count++
                             curRow++
                             curCol--
                     }
                     curRow = startRow - 1
                     curCol = startCol + 1
-                    while(curRow >= 0 && curRow < configAttributes.num_rows
-                        && curCol >= 0 && curCol < configAttributes.num_columns
-                        && board[curRow][curCol]['color'] === player 
-                        ) {
+                    while(conditionCheck(curRow, curCol)) {
                             count++
                             curRow--
                             curCol++
@@ -335,12 +140,16 @@ const doWeHaveAWinner = (moves, player, board) => {
         }
 
         const mostOccIndex = () => {
+            // obj is an Object containing each row and the number of times it has been filled
+            // in the board
             // Finds the cell with the most occurrences in a state
             // Returns the cell index and its occurrences
             const find = (obj) => {
                 const cells = Object.keys(obj).map((el) => parseInt(el))
                 const occurrences = Object.values(obj)
-    
+                
+                // loops through each key/value pair in obj and finds the pair with the 
+                // largest value
                 const mostOccurred = occurrences.reduce((most, occ, idx) => (
                     occ > most[1]
                         ? [cells[idx], occ]
@@ -350,25 +159,30 @@ const doWeHaveAWinner = (moves, player, board) => {
                 return mostOccurred
             }
 
-            let occRows = {}
-            let occCols = {}
-            state.map((cell, _) => {
-                occRows[cell[0]] == null
-                    ? occRows[cell[0]] = 1
-                    : occRows[cell[0]]++
-            })
-            state.map((cell, _) => {
-                occCols[cell[1]] == null
-                    ? occCols[cell[1]] = 1
-                    : occCols[cell[1]]++
-            })
+            const findOccurrences = (state) => {
+                let occRows = {}
+                let occCols = {}
+                state.map((cell, _) => {
+                    occRows[cell[0]] == null
+                        ? occRows[cell[0]] = 1
+                        : occRows[cell[0]]++
+                })
+                state.map((cell, _) => {
+                    occCols[cell[1]] == null
+                        ? occCols[cell[1]] = 1
+                        : occCols[cell[1]]++
+                })
+                return [occRows, occCols]
+            }
 
-            const [mostOccRow, occRow] = find(occRows)
-            const [mostOccCol, occCol] = find(occCols)
+            const [rowOccurrences, colOccurrences] = findOccurrences(state)
+
+            const [mostOccurredRow, rowOccurrence] = find(rowOccurrences)
+            const [mostOccurredCol, colOccurrence] = find(colOccurrences)
 
             return {
-                mostOccRow, occRow,
-                mostOccCol, occCol
+                mostOccurredRow, rowOccurrence,
+                mostOccurredCol, colOccurrence
             }
         }
 
@@ -397,10 +211,9 @@ const doWeHaveAWinner = (moves, player, board) => {
     } 
 
     let state = mapStateCellsToBoardCells(moves)
-    let newState = state.slice()
-    quicksort(newState, 0, newState.length - 1)
-    
+    //convert board from 4 x 3 x 3 to 6 x 6 representation
     const fullBoard = sectionsToBoard(board)
+
     if (goalTest(state, fullBoard)) {
         console.log("winning state", state)
         return true
