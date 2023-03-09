@@ -11,17 +11,18 @@ const Controls = (props) => {
     const { phase, onRotateCallback, onUndoCallback, showUndoButton } = props
 
     const getButtons = () => {
-        if (phase !== 'rotate') return
         const buttons = ['rotate?', 'undo'] 
+        if (phase !== 'rotate') buttons.shift()
+        if (!showUndoButton) buttons.pop()
         return buttons.map((button, index) => {
             let content
-            if (index === 0) {
+            if (button === 'rotate?') {
                 content = 
                     <Grid style={buttonStyle} item onClick={() => onRotateCallback()} >
                         <Button text={button} />
                     </Grid>
             }
-            else if (showUndoButton) {
+            else if (button="undo") {
                 content = 
                     <Grid style={buttonStyle} item onClick={() => onUndoCallback()} >
                         <Button text={button} />

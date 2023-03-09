@@ -52,12 +52,13 @@ const testBoard = testBoards[0]
 const [startPlayer, startMoves] = getStartColorAndMoves(testBoard)
 
 const initialState = {
-    // board: createInitialBoard(),
-    board: testBoard,
-    // moves: createInitialMoves(),
-    moves: startMoves,
+    board: createInitialBoard(),
+    // board: testBoard,
+    moves: createInitialMoves(),
+    // moves: startMoves,
     phase: 0,
-    nextColor: startPlayer,
+    // nextColor: startPlayer,
+    nextColor: 'black',
     winnerColor: null,
     haveAWinner: false,
     haveADraw: false,
@@ -68,7 +69,8 @@ const initialState = {
     modalMessage: "",
     undo: false,
     modalOpen: false,
-    topMessage: ` ${startPlayer} clicks next`,
+    topMessage: `Black clicks next`
+    // topMessage: ` ${startPlayer} clicks next`,
 }
 
 const reducer = (state, action) => {

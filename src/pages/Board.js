@@ -401,7 +401,9 @@ export default function Board (props) {
                         // topMessage: `Rotation has no effect on block ${sectionIdx + 1}`,
                         topMessage: rotationNoEffectMessage(sectionIdx + 1) + ' ' + nextPhaseMessage(newNextColor, states[newPhase]),
                         lastRotateSectionIdx: sectionIdx,
-                        lastRotateDirection: option
+                        lastRotateDirection: option,
+                        modalOpen: false,
+                        modalMessage: ''
                     }
                 })
             }
@@ -491,34 +493,38 @@ export default function Board (props) {
             })
             return
         }
-
-        dispatch({
-            type: "UPDATE STATE AFTER PHASE",
-            newState: {
-                ...state,
-                board: newBoard,
-                moves: newMoves,
-                phase: newPhase,
-                showUndoButton: true,
-                lastRotateSectionIdx: sectionIdx,
-                lastRotateDirection: direction,
-                undo: true,
-                showUndoButton: true,
-                nextColor: newColor,
-                // topMessage: `${nextColor} rotated block ${sectionIdx + 1}`
-                topMessage: reportLastActionMessage(nextColor, "rotate", sectionIdx + 1)
-                    + "\n" + nextPhaseMessage(newColor, states[newPhase])
-            }
-        })
-
-        // console.log("rotated section: ", sectionIdx)
-        // console.log("new moves", newMoves)
-
+        
         if (checkDraw(currentPlayerMoves.length)) {
             dispatch({
                 type: "UPDATE DRAW"
             })
         }
+
+        const topMessage = reportLastActionMessage(nextColor, "rotate", sectionIdx + 1)
+                    + "\n" + nextPhaseMessage(newColor, states[newPhase])
+
+        return {newBoard, newMoves, newPhase, lastRotateSectionIdx: sectionIdx, lastRotateDirection: direction, topMessage}
+
+        // dispatch({
+        //     type: "UPDATE STATE AFTER PHASE",
+        //     newState: {
+        //         ...state,
+        //         board: newBoard,
+        //         moves: newMoves,
+        //         phase: newPhase,
+        //         showUndoButton: true,
+        //         lastRotateSectionIdx: sectionIdx,
+        //         lastRotateDirection: direction,
+        //         undo: true,
+        //         showUndoButton: true,
+        //         nextColor: newColor,
+        //         topMessage: reportLastActionMessage(nextColor, "rotate", sectionIdx + 1)
+        //             + "\n" + nextPhaseMessage(newColor, states[newPhase])
+        //     }
+        // })
+
+        // console.log("rotated section: ", sectionIdx)
+        // console.log("new moves", newMoves)
     }
 
     const undoClick = () => {
@@ -601,17 +607,41 @@ export default function Board (props) {
     }
 
     const onModalClickCallback = (sectionIdx, option) => {
-        rotateSection(sectionIdx, option)
-        const newColor = changeColor(nextColor)
+        const res = rotateSection(sectionIdx, option)
+        const newNextColor = changeColor(nextColor)
+
+        const {newBoard, newMoves, newPhase, lastRotateSectionIdx, lastRotateDirection, topMessage} = res
 
         dispatch({
-            type: 'UPDATE STATE AFTER MODAL CLICK',
+            type: "UPDATE STATE AFTER PHASE",
             newState: {
-                nextColor: newColor,
+                ...state,
+                board: newBoard,
+                moves: newMoves,
+                phase: newPhase,
+                showUndoButton: true,
+                lastRotateSectionIdx,
+                lastRotateDirection,
+                undo: true,
+                showUndoButton: true,
+                nextColor,
+                topMessage,
+                nextColor: newNextColor,
                 modalOpen: false,
-                modalMessage: ''
+                modalMessage: '' 
             }
         })
+
+
+
+        // dispatch({
+        //     type: 'UPDATE STATE AFTER MODAL CLICK',
+        //     newState: {
+        //         nextColor: newNextColor,
+        //         modalOpen: false,
+        //         modalMessage: ''
+        //     }
+        // })
     }
     
     const boardwidth = calcBoardWidth()
