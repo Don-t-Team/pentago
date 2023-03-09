@@ -1,4 +1,4 @@
-import {Fragment, useReducer, useState} from 'react';
+import {Fragment, useReducer} from 'react';
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid"
 
@@ -11,9 +11,6 @@ import { rotationNoEffectMessage, nextPhaseMessage, reportLastActionMessage, rep
 import Modal from '../components/Modal';
 
 import { reducer, initialState } from '../reducers';
-import quicksort from '../functions/Sort';
-
-import { createInitialCell } from '../functions/initialize';
 
 const changeColor = color =>  color === 'white' ? 'black' : 'white';
 
