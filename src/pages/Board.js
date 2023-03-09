@@ -85,6 +85,16 @@ const doWeHaveAWinner = (moves, player, board) => {
         
 
         // a helper function for vertical and horizontal goal checks
+        // mostOccRowOrCol is the either the row or column in the board that has the most occupied cells
+        // winCondition is a array of length 6 either from 0 to 5 or 1 to 6 and represents the two presets
+        // of winning positions horizontally or vertically
+        // rowOrColToCheck is either the row or column index of a cell in the state of moves of the current player
+        // rowOrColToSlide is either the column or row index of a cell in the state of moves of the current player
+        // if rowOrColToCheck is the same as the row or column with the largest number of occupied cells, then the 
+        // rowOrColToSlide is checked to see if it exists in the winning preset passed in as an argument
+        // In other words, if the row index of a cell is the same as the index of the row with the most occupied cells
+        // and corresponding column index is either in the array from 0 to 5 or from 1 to 6, then the cell is considered
+        // connected to other cells that pass the same condition check
         const winConditionCheck = (winCondition, mostOccRowOrCol, direction) => {
             const win = state.reduce((connected, curCell) => {
                 const [curCellRow, curCellCol] = curCell
@@ -190,9 +200,9 @@ const doWeHaveAWinner = (moves, player, board) => {
         if (nullCheck())
             return false
 
-        const { mostOccRow, occRow, mostOccCol, occCol } = mostOccIndex()
+        const { mostOccurredRow, rowOccurrence, mostOccurredCol, colOccurrence } = mostOccIndex()
 
-        if (verticalCheck(mostOccCol, occCol) || horizontalCheck(mostOccRow, occRow) || diagonalCheck(board, player))
+        if (verticalCheck(mostOccurredCol, colOccurrence) || horizontalCheck(mostOccurredRow, rowOccurrence) || diagonalCheck(board, player))
             return true
 
         return false
