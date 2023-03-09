@@ -38,8 +38,8 @@ const reportUndoMessage = (lastColor, action) => {
     const formattedLastColor = format(lastColor, () => (lastColor.split('').map((char, index) => 
         index === 0 ? char.toUpperCase() : char
     ).join('')) ) 
-
-    return `${formattedLastColor} undo ${action}. Click on a new cell.`
+    const addon = action === 'click' ? 'Click on a new cell' : 'Choose a block to rotate'
+    return `${formattedLastColor} undo ${action}. ${addon}.`
 }
 
 

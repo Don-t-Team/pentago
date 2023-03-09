@@ -554,12 +554,46 @@ export default function Board (props) {
     }
 
     const undoRotate = () => {
+
         if (lastRotateDirection === "Clockwise") {
-            rotateSection(lastRotateSectionIdx, "Counter Clockwise")
+            return rotateSection(lastRotateSectionIdx, "Counter Clockwise")
         }
         else if (lastRotateDirection === "Counter Clockwise") {
-            rotateSection(lastRotateSectionIdx, "Clockwise")
+            return rotateSection(lastRotateSectionIdx, "Clockwise")
         }
+
+    }
+
+    const updateStateAfterUndoClick = (newState) => {
+        dispatch({
+            type: "UPDATE STATE AFTER PHASE",
+            newState: newState
+        })
+    }
+
+    const updateStateAftreUndoRotate = (newState) => {
+        const {newBoard, newMoves, newPhase, nextColor, lastRotateSectionIdx, lastRotateDirection, topMessage} = newState
+
+        dispatch({
+            type: "UPDATE STATE AFTER PHASE",
+            newState: {
+                ...state,
+                board: newBoard,
+                moves: newMoves,
+                phase: newPhase,
+                showUndoButton: true,
+                lastRotateSectionIdx,
+                lastRotateDirection,
+                undo: false,
+                showUndoButton: false,
+                nextColor,
+                topMessage,
+                modalOpen: false,   
+                modalMessage: '',
+                topMessage: topMessage 
+            }
+        })
+
     }
 
     const onUndoCallback = () => {
@@ -568,30 +602,43 @@ export default function Board (props) {
         }
 
         let action = ""
-        const prevColor = nextColor
-        const prevState = rollbackState(phase)
+        let prevColor = nextColor
+        let prevPhase = rollbackState(phase)
 
-        if (states[prevState] === "click") {
+        if (states[prevPhase] === "click") {
             undoClick()
             action = "click"
-        }
-        else if (states[prevState] === "rotate") {
-            // don't need to roll back state because a rotation moves to the next state
-            // which is also the previous state
-            undoRotate()
-            action = "rotate"
-            prevColor = changeColor(nextColor)
-        }
-
-        dispatch({
-            type: "UPDATE STATE AFTER PHASE",
-            newState: {
+            const newState = {
                 undo: false,
                 showUndoButton: false,
-                // topMessage: `${prevColor} undo ${action}`
+                phase: prevPhase,
+                nextColor: prevColor,
                 topMessage: reportUndoMessage(prevColor, action) 
             }
-        })
+            updateStateAfterUndoClick(newState)
+        }
+        else if (states[prevPhase] === "rotate") {
+            // don't need to roll back state because a rotation moves to the next state
+            // which is also the previous state
+            action = "rotate"
+            prevColor = changeColor(nextColor)
+            const newState = undoRotate()
+            newState.newPhase = prevPhase
+            newState.nextColor = prevColor
+            newState.topMessage = reportUndoMessage(prevColor, action)
+            updateStateAftreUndoRotate(newState)
+        }
+
+        // dispatch({
+        //     type: "UPDATE STATE AFTER PHASE",
+        //     newState: {
+        //         undo: false,
+        //         showUndoButton: false,
+        //         phase: prevPhase,
+        //         nextColor: prevColor,
+        //         topMessage: reportUndoMessage(prevColor, action) 
+        //     }
+        // })
     }
     
     const onRotateCallback = () => {
