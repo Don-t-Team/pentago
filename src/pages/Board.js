@@ -504,28 +504,9 @@ export default function Board (props) {
                     + "\n" + nextPhaseMessage(newColor, states[newPhase])
 
         return {newBoard, newMoves, newPhase, lastRotateSectionIdx: sectionIdx, lastRotateDirection: direction, topMessage}
-
-        // dispatch({
-        //     type: "UPDATE STATE AFTER PHASE",
-        //     newState: {
-        //         ...state,
-        //         board: newBoard,
-        //         moves: newMoves,
-        //         phase: newPhase,
-        //         showUndoButton: true,
-        //         lastRotateSectionIdx: sectionIdx,
-        //         lastRotateDirection: direction,
-        //         undo: true,
-        //         showUndoButton: true,
-        //         nextColor: newColor,
-        //         topMessage: reportLastActionMessage(nextColor, "rotate", sectionIdx + 1)
-        //             + "\n" + nextPhaseMessage(newColor, states[newPhase])
-        //     }
-        // })
-
-        // console.log("rotated section: ", sectionIdx)
-        // console.log("new moves", newMoves)
     }
+
+
 
     const undoClick = () => {
         const currentPlayer = getCurrentPlayer()
@@ -542,15 +523,23 @@ export default function Board (props) {
             return {...cell}
         })))
 
-        dispatch({
-            type: "UPDATE STATE AFTER PHASE",
-            newState: {
-                board: prevBoard,
-                moves: prevMoves,
-                phase: prevState,
-                showUndoButton: false
-            }
-        })   
+        const newState = {
+            board: prevBoard,
+            moves: prevMoves,
+            showUndoButton: false
+        }
+
+        return newState
+
+        // dispatch({
+        //     type: "UPDATE STATE AFTER PHASE",
+        //     newState: {
+        //         board: prevBoard,
+        //         moves: prevMoves,
+        //         phase: prevState,
+        //         showUndoButton: false
+        //     }
+        // })   
     }
 
     const undoRotate = () => {
@@ -561,7 +550,6 @@ export default function Board (props) {
         else if (lastRotateDirection === "Counter Clockwise") {
             return rotateSection(lastRotateSectionIdx, "Clockwise")
         }
-
     }
 
     const updateStateAfterUndoClick = (newState) => {
@@ -606,15 +594,13 @@ export default function Board (props) {
         let prevPhase = rollbackState(phase)
 
         if (states[prevPhase] === "click") {
-            undoClick()
+            const newState = undoClick()
             action = "click"
-            const newState = {
-                undo: false,
-                showUndoButton: false,
-                phase: prevPhase,
-                nextColor: prevColor,
-                topMessage: reportUndoMessage(prevColor, action) 
-            }
+            newState.undo = false
+            newState.showUndoButton = false
+            newState.phase = prevPhase
+            newState.nextColor = prevColor
+            newState.topMessage = reportUndoMessage(prevColor, action)
             updateStateAfterUndoClick(newState)
         }
         else if (states[prevPhase] === "rotate") {
@@ -628,17 +614,6 @@ export default function Board (props) {
             newState.topMessage = reportUndoMessage(prevColor, action)
             updateStateAftreUndoRotate(newState)
         }
-
-        // dispatch({
-        //     type: "UPDATE STATE AFTER PHASE",
-        //     newState: {
-        //         undo: false,
-        //         showUndoButton: false,
-        //         phase: prevPhase,
-        //         nextColor: prevColor,
-        //         topMessage: reportUndoMessage(prevColor, action) 
-        //     }
-        // })
     }
     
     const onRotateCallback = () => {
