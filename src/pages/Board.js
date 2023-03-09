@@ -5,14 +5,15 @@ import Grid from "@mui/material/Grid"
 import TopMessage from './TopMessage'
 import Section from "./Section"
 import Controls from "./Controls"
-
 import configAttributes from "../config/attributes"
+
 import { rotationNoEffectMessage, nextPhaseMessage, reportLastActionMessage, reportUndoMessage } from '../config/messages'
 import Modal from '../components/Modal';
 
 import { reducer, initialState } from '../reducers';
-
 import quicksort from '../functions/Sort';
+
+import { createInitialCell } from '../functions/initialize';
 
 const changeColor = color =>  color === 'white' ? 'black' : 'white';
 
@@ -34,110 +35,74 @@ const checkDraw = (numCurrentPlayerMoves) => {
 }
 
 const doWeHaveAWinner = (moves, player, board) => {
-    const goalTest = (state) => {
+    const goalTest = (state, board) => {
 
         // const diagonalCheck = () => {
-        //     const [startRow, startCol] = state[0]
-        //     let iter = 0
-        //     let count = 1
-        //     const numRows = configAttributes.num_rows
-        //     while (iter < numRows) {
-        //         const pivotRow = startRow + iter
-        //         const pivotCol = startCol + iter
-        //         if (pivotRow > 0 && pivotRow < configAttributes.num_rows
-        //             && pivotCol > 0 && pivotCol < configAttributes.num_columns) {
-        //             for (let i = -1; i <= 1; i++) {
-        //                 if (i !== 0) {
-        //                     const col = (startCol + iter) * i
-        //                     const row = (startRow + iter) * i
-        //                     let rowDiff = pivotRow - startRow
-        //                     let colDiff = col - startCol
-        //                     if (row > 0 && row < configAttributes.num_rows
-        //                         && col > 0 && col < configAttributes.num_columns) {
-        //                         if (Math.abs(rowDiff) === Math.abs(colDiff)
-        //                             && board[pivotRow][col]['color'] === player) {
-        //                                 count++
-        //                             }
-        //                         rowDiff = row - startRow
-        //                         colDiff = pivotCol - startCol
-        //                         if (Math.abs(rowDiff) === Math.abs(colDiff)
-        //                             && board[row][pivotCol]['color'] === player) {
-        //                             count++
-        //                         }
+
+        //     const validate = (winMoves) => {
+        //         const start = winMoves[0]
+        //         return winMoves.reduce((win, cur, _) => {
+        //             if (Math.abs(cur[0] - start[0]) === Math.abs(cur[1] - start[1])) {
+        //                 return true
+        //             }
+        //             return false
+        //         }, false)
+        //     }
+
+        //     const check = (direction, startRow, startCol) => {
+        //         // counting the start cell itself 
+        //         let count = 1
+        //         const winMoves = []
+        //         let iter = 1
+        //         while (rows[curRow] != null && cols[curCol] != null) {
+        //             let iters = [iter, -iter]
+        //             if (direction === "main diagonal") {
+        //                 for (let i of iters) {
+        //                     let newRow = startRow + i
+        //                     let newCol = startCol + i
+        //                     curRow = newRow
+        //                     curCol = newCol
+        //                     if (rows[newRow] === newCol && cols[newCol] === newRow) {
+        //                         count++
+        //                         winMoves.push([newRow, newCol])
         //                     }
         //                 }
         //             }
-        //         }
-        //         iter++
-        //         if (count === 5) {
-        //             return true
-        //         }
+        //             else {
+        //                 for (let iter of iters) {
+        //                     let newRow = curRow - iter
+        //                     let newCol = curCol + iter
+        //                     curRow = newRow
+        //                     curCol = newCol
+        //                     if (rows[newRow] === newCol && cols[newCol] === newRow) {
+        //                         count++
+        //                         winMoves.push([newRow, newCol])
+        //                     }
+        //                 }
+        //             }
+
+        //             if (count === 5) {
+        //                 return validate(winMoves)
+        //             }
+        //             iter++
+        //         }  
+        //         return count
         //     }
-        // }
 
-        const diagonalCheck = () => {
-
-            const validate = (winMoves) => {
-                const start = winMoves[0]
-                return winMoves.reduce((win, cur, _) => {
-                    if (Math.abs(cur[0] - start[0]) === Math.abs(cur[1] - start[1])) {
-                        return true
-                    }
-                    return false
-                }, false)
-            }
-
-            const check = (direction, curRow, curCol) => {
-                // counting the start cell itself 
-                let count = 1
-                const winMoves = []
-                while (rows[curRow] != null && cols[curCol] != null) {
-                    let iters = [1, -1]
-                    if (direction === "main diagonal") {
-                        for (let iter of iters) {
-                            let newRow = curRow + iter
-                            let newCol = curCol + iter
-                            curRow = newRow
-                            curCol = newCol
-                            if (rows[newRow] && cols[newCol]) {
-                                count++
-                                winMoves.push([newRow, newCol])
-                            }
-                        }
-                    }
-                    else {
-                        for (let iter of iters) {
-                            let newRow = curRow - iter
-                            let newCol = curCol + iter
-                            curRow = newRow
-                            curCol = newCol
-                            if (rows[newRow] && cols[newCol]) {
-                                count++
-                                winMoves.push([newRow, newCol])
-                            }
-                        }
-                    }
-
-                    if (count === 5) {
-                        return validate(winMoves)
-                    }
-                }  
-            }
-
-            const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[0]]))
-            const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[1]]))
+        //     const rows = Object.fromEntries(state.map((cell) => [cell[0], cell[1]]))
+        //     const cols = Object.fromEntries(state.map((cell) => [cell[1], cell[0]]))
             
-            let start = state[0]
-            let curRow = rows[start[0]]
-            let curCol = cols[start[1]]
+        //     let start = state[0]
+        //     let curRow = rows[start[0]]
+        //     let curCol = cols[start[1]]
 
-            let count = check("main diagonal", curRow, curCol)
-            if (count === 5) {
-                return true
-            }
+        //     let count = check("main diagonal", curRow, curCol)
+        //     if (count === 5) {
+        //         return true
+        //     }
             
-            count = check("sub diagonal", curRow, curCol)
-            return count === 5
+        //     count = check("sub diagonal", curRow, curCol)
+        //     return count === 5
 
             // top left to bottom right
             // while (rows[curRow] != null && cols[curCol] != null) {
@@ -256,7 +221,66 @@ const doWeHaveAWinner = (moves, player, board) => {
             //     }
             //     return false
             // }
-        }
+        // }
+
+            const diagonalCheck = (board, player) => {
+                // const [startRow, startCol] = state[0]
+
+                const mainDiagonalCheck = (startRow, startCol) => {
+                    let count = 1
+                    let curRow = startRow + 1
+                    let curCol = startCol + 1
+                    while(curRow >= 0 && curRow < configAttributes.num_rows
+                        && curCol >= 0 && curCol < configAttributes.num_columns
+                        && board[curRow][curCol]['color'] === player
+                        ) {
+                            count++
+                            curRow++
+                            curCol++
+                    }
+                    curRow = startRow - 1
+                    curCol = startCol - 1
+                    while(curRow >= 0 && curRow < configAttributes.num_rows
+                        && curCol >= 0 && curCol < configAttributes.num_columns
+                        && board[curRow][curCol]['color'] === player
+                        ) {
+                            count++
+                            curRow--
+                            curCol--
+                    }
+                    return count >= 5
+                }
+
+                const subDiagonalCheck = (startRow, startCol) => {
+                    let count = 1
+                    let curRow = startRow + 1
+                    let curCol = startCol - 1
+                    while(curRow >= 0 && curRow < configAttributes.num_rows
+                        && curCol >= 0 && curCol < configAttributes.num_columns
+                        && board[curRow][curCol]['color'] === player
+                        ) {
+                            count++
+                            curRow++
+                            curCol--
+                    }
+                    curRow = startRow - 1
+                    curCol = startCol + 1
+                    while(curRow >= 0 && curRow < configAttributes.num_rows
+                        && curCol >= 0 && curCol < configAttributes.num_columns
+                        && board[curRow][curCol]['color'] === player 
+                        ) {
+                            count++
+                            curRow--
+                            curCol++
+                    }
+                    return count >= 5
+                }
+
+                return state.some((cell) => (
+                    mainDiagonalCheck(cell[0], cell[1]) || subDiagonalCheck(cell[0], cell[1])
+                ))
+            }
+        
 
         // a helper function for vertical and horizontal goal checks
         const winConditionCheck = (winCondition, mostOccRowOrCol, direction) => {
@@ -357,7 +381,7 @@ const doWeHaveAWinner = (moves, player, board) => {
 
         const { mostOccRow, occRow, mostOccCol, occCol } = mostOccIndex()
 
-        if (verticalCheck(mostOccCol, occCol) || horizontalCheck(mostOccRow, occRow) || diagonalCheck())
+        if (verticalCheck(mostOccCol, occCol) || horizontalCheck(mostOccRow, occRow) || diagonalCheck(board, player))
             return true
 
         return false
@@ -375,12 +399,24 @@ const doWeHaveAWinner = (moves, player, board) => {
     let state = mapStateCellsToBoardCells(moves)
     let newState = state.slice()
     quicksort(newState, 0, newState.length - 1)
-    // const newBoard = board.map(section => section.map(row => mapStateCellsToBoardCells(row)))
-    if (goalTest(state)) {
+    
+    const fullBoard = sectionsToBoard(board)
+    if (goalTest(state, fullBoard)) {
         console.log("winning state", state)
         return true
     }
     return false
+}
+
+const sectionsToBoard = (prevBoard) => {
+    const num_rows = configAttributes.num_rows
+    const num_cols = configAttributes.num_columns
+    const newBoard = Array(num_rows).fill().map(() => Array(num_cols).fill(true).map(el => el))
+    prevBoard.map((section, sectionIdx) => section.map((row, rowIdx) => row.map((cell, colIdx) => {
+        const [boardRow, boardCell] = mapSectionCellToBoardCell(rowIdx, colIdx, sectionIdx)
+        newBoard[boardRow][boardCell] = {...cell}
+    })))
+    return newBoard
 }
 
 const mapSectionCellToBoardCell = (rowIdx, colIdx, sectionIdx) => {

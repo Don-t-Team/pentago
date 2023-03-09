@@ -7,7 +7,7 @@ const getStartColorAndMoves = (board) => {
             const sectionSum = section.reduce((sum, row, rowIdx) => {
                 const rowSum = row.reduce((sum, cell, colIdx) => {
                     if (cell['color'] === color) {
-                        const player = color === 'black' ? 0 : 1    
+                        const player = cell['color'] === 'black' ? 0 : 1    
                         moves[player].push([sectionIdx, rowIdx, colIdx])
                         return sum + 1
                     }
